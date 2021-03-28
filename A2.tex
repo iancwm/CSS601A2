@@ -3,10 +3,29 @@
 \usepackage{amsmath}
 \usepackage[a4paper, portrait, margin=1in]{geometry}
 \usepackage{hyperref}
+\usepackage{minted}
 \usepackage{tikz}
+\usepackage{listings}
+
+\renewcommand{\thesection}{Question \arabic{section}}
+\renewcommand{\thesubsection}{\arabic{section}\alph{subsection})}
+\renewcommand{\thesubsubsection}{\roman{subsubsection})}
+\renewcommand{\thefigure}{\arabic{figure}}
+
+\lstset{
+basicstyle=\small\ttfamily,
+columns=flexible,
+breaklines=true
+}
+
+\setlength{\parindent}{0em}
+\setlength{\parskip}{1em}
+
 
 \title{CSS601 Introduction to Artificial Intelligence - Assignment 2}
-\author{Ian Chong Wei Ming\\\href{mailto:ian.chong.2020@mitb.smu.edu.sg}{ian.chong.2020@mitb.smu.edu.sg}}
+\author{Ian Chong Wei Ming\\
+\href{mailto:ian.chong.2020@mitb.smu.edu.sg}{ian.chong.2020@mitb.smu.edu.sg}\\
++65-9680-8118}
 \date{\today}
 
 \begin{document}
@@ -63,21 +82,144 @@ For the above graph (heuristic values are provided in red color and actual costs
 color), please provide answers to the following answers. Also note that S is start state and G
 is goal state.
 
+\subsubsection{Is the heuristic admissible?}
+
 \begin{center}
     \begin{tabular}{|c|c|c|} 
     \hline
     Node $n$ & Minimum cost to reach $G$ from $n$ & $h(n)$ \\ 
     \hline
     S & bla & bla \\
+    \hline
     A & bla & bla \\
+    \hline
     B & bla & bla \\
+    \hline
     C & bla & bla \\
+    \hline
     E & bla & bla \\
+    \hline
     D & bla & bla \\
+    \hline
     F & bla & bla \\
+    \hline
     H & bla & bla \\
     \hline
     \end{tabular}
+\end{center}
+
+\subsubsection{Is the heuristic consistent? Provide justification}
+Answer goes here.
+
+\subsubsection{DFS, BFS, Best First Search and A* Search}
+Provide the search steps (as discussed in class) with DFS, BFS (with and without priority
+queue), Best First Search and A* search. Specify for each algorithm if the open list is
+queue, stack, or priority queue. Feel free to add rows/columns, or other details in the
+table below. Open list contains nodes that are to be explored, and “Nodes to add” are
+the successors of the node that is recently popped.
+
+
+\begin{center}
+    \begin{tabular}{|c|c|c|c|} 
+    \hline
+    Step No. & Open List & POP & Nodes to add \\ 
+    \hline
+    1 & S & bla & bla \\
+    \hline
+    2 & S & bla & bla \\
+    \hline
+    3 & S & bla & bla \\
+    \hline
+    \end{tabular}
+\end{center}
+
+\section{Build an automated car in a simulator}
+
+The goal of this assignment is to guide your car to move in a multi-lane straight road (represented using a rectangular grid) simulator (details explained later). 
+
+In addition to your car, there are other cars also moving along the road. You need to design an algorithm which can take your car from its start position to the end of the road as soon as possible while avoiding other cars. 
+
+Other cars are moving randomly. At any step, your car can view up to 4 cells in front, left and right, i.e., it will not be able to look at the other cars which are beyond its visibility range of 4 cells. (This visibility range of 4 is configurable and your algorithm should work irrespective of visibility range).
+
+We describe the state, operators and goal state for this problem below.
+
+\textbf{State}: State of the car is its location, i.e., the grid cell it is currently present in. 
+
+\textbf{Operators/Actions}: Following are the available operators or actions for the car:
+
+\begin{itemize}
+    \item \textbf{Forward} – Moves the car one step ahead in the same lane.
+    \item \textbf{Forward-2$\times$} – Moves the car two steps ahead in the same lane.
+    \item \textbf{Forward-3$\times$} – Moves the car three steps ahead in the same lane.
+    \item \textbf{Left} – Moves the car in the left lane and one step forward.
+    \item \textbf{Right} – Moves the car in the right lane and one step forward.
+    \item \textbf{None} – Stays at the same place.
+\end{itemize}
+
+If the action is unsuccessful then the car will stay at the same place. Action will be unsuccessful if there is a wall or another car present in the intended direction of move. For example, a forward will be unsuccessful if there is another car present in front of your car.
+As the left action moves a car to the left and one step forward, a left action taken in grid cell (5,3) will be unsuccessful if there is a car in either of (4,3) or (4,4).
+
+\textbf{Goal State:} There is one goal state, where your car needs to reach.
+
+\subsection{Write the function}
+Write the function that will generate the \textbf{operator/action} to be taken at the current time step (based on search algorithms discussed in class), so that time taken to reach goal is as \textit{minimal} as possible. [You may refer to “\texttt{pseudo code.pdf}” for implementation details and pseudo code for $A* Search$.]
+The code for the Simulator is provided in the zip file SelfDrivingCar.zip. The details about the
+installation/running of simulator and code details are provided in the file SelfDrivingCar.pdf
+(present in the zip file).
+
+\subsection{Submit code in \texttt{.pdf}}
+
+\section{Taxi Driver Markov Decision Process}
+Taxi drivers in Singapore can pick up customers from any location that is not on highways. However, they require guidance on where to pick up customers when they do not have customers on board and there are no bookings. In this question, we address this guidance
+problem. There are four locations: L1, L2, L3 and L4 from where taxi drivers can pick up and drop off
+customers. At any decision epoch, the chances of the taxi driver picking up a customer from
+different locations are provided in Table 1 below:
+
+\begin{center}
+    \begin{tabular}{|c|c|} 
+    \hline
+    Location & Chance of finding customer\\ 
+    \hline
+    $L1$ & 0.3 \\
+    \hline
+    $L2$ & 0.8 \\
+    \hline
+    $L3$ & 0.1 \\
+    \hline
+    $L4$ & 0.6 \\
+    \hline
+    \end{tabular}
+    
+\end{center}
+
+Once the taxi driver picks up a customer, the customer determines the destination. Observed
+probabilities (from past data) of a customer starting from a source location and going to a
+destination location are given below:
+
+\begin{center}
+    \begin{tabular}{|c|c|} 
+    \hline
+    $Source \rightarrow Destination$ & Probability\\ 
+    \hline
+    $L1 \rightarrow L2$ & 0.4 \\
+    \hline
+    $L1 \rightarrow L3$ & 0.35 \\
+    \hline
+    $L1 \rightarrow L4$ & 0.25 \\
+    \hline
+    $L2 \rightarrow L1$ & 0.4 \\
+    \hline
+    $L2 \rightarrow L3$ & 0.6 \\
+    \hline
+    $L3 \rightarrow L1$ & 0.6 \\
+    \hline
+    $L3 \rightarrow L4$ & 0.4 \\
+    \hline
+    $L4 \rightarrow L1$ & 0.65 \\
+    \hline
+    $L4 \rightarrow L2$ & 0.35 \\
+    \hline
+    \end{tabular}    
 \end{center}
 
 \end{document}
