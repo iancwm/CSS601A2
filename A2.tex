@@ -6,6 +6,8 @@
 \usepackage{minted}
 \usepackage{tikz}
 \usepackage{listings}
+\usepackage{multirow}
+\usepackage{bookmark}
 
 \renewcommand{\thesection}{Question \arabic{section}}
 \renewcommand{\thesubsection}{\arabic{section}\alph{subsection})}
@@ -16,6 +18,13 @@
 basicstyle=\small\ttfamily,
 columns=flexible,
 breaklines=true
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=blue,
 }
 
 \setlength{\parindent}{0em}
@@ -170,12 +179,15 @@ installation/running of simulator and code details are provided in the file Self
 \subsection{Submit code in \texttt{.pdf}}
 
 \section{Taxi Driver Markov Decision Process}
-Taxi drivers in Singapore can pick up customers from any location that is not on highways. However, they require guidance on where to pick up customers when they do not have customers on board and there are no bookings. In this question, we address this guidance
-problem. There are four locations: L1, L2, L3 and L4 from where taxi drivers can pick up and drop off
-customers. At any decision epoch, the chances of the taxi driver picking up a customer from
-different locations are provided in Table 1 below:
+Taxi drivers in Singapore can pick up customers from any location that is not on highways. 
+However, they require guidance on where to pick up customers when they do not have customers on board and there are no bookings. 
+In this question, we address this guidance problem. 
+There are four locations: $L1$, $L2$, $L3$ and $L4$ from where taxi drivers can pick up and drop off customers. 
+At any decision epoch, the chances of the taxi driver picking up a customer from different locations are provided in \textbf{Table 1} below:
 
 \begin{center}
+    \textbf{Table 1}
+
     \begin{tabular}{|c|c|} 
     \hline
     Location & Chance of finding customer\\ 
@@ -197,6 +209,8 @@ probabilities (from past data) of a customer starting from a source location and
 destination location are given below:
 
 \begin{center}
+    \textbf{Table 2}
+
     \begin{tabular}{|c|c|} 
     \hline
     $Source \rightarrow Destination$ & Probability\\ 
@@ -221,5 +235,114 @@ destination location are given below:
     \hline
     \end{tabular}    
 \end{center}
+\textit{**If a source destination pair does not appear in the above table, it indicates the fare is 0.}
+
+Cost of travelling between locations is as follows:
+
+\begin{center}
+    \textbf{Table 3}
+
+    \begin{tabular}{|c|c|} 
+    \hline
+    $Source \rightarrow Destination$ & Cost (\$)\\ 
+    \hline
+    $L1 \rightarrow L2$ & 1.00 \\
+    \hline
+    $L1 \rightarrow L3$ & 1.50 \\
+    \hline
+    $L1 \rightarrow L4$ & 1.25 \\
+    \hline
+    $L2 \rightarrow L1$ & 1.00 \\
+    \hline
+    $L2 \rightarrow L3$ & 0.75 \\
+    \hline
+    $L3 \rightarrow L1$ & 1.50 \\
+    \hline
+    $L3 \rightarrow L4$ & 0.80 \\
+    \hline
+    $L4 \rightarrow L1$ & 1.25 \\
+    \hline
+    $L4 \rightarrow L2$ & 1.00 \\
+    \hline
+    \end{tabular}
+\end{center}
+\textit{**If a source destination pair does not appear in the above table, it indicates the cost is infinity. If the taxi does not move (i.e., source and destination are same), then the cost is zero.}
+
+The taxi driver can either pickup from the current location or move to another location. 
+Pickup corresponds to picking up a customer (if one is found) and dropping them of at their destination. 
+Pickup action succeeds with probabilities specified in \textbf{Table 1} and if the taxi picks up a customer, destination location is determined by the probabilities in \textbf{Table 2}. 
+When Pickup action fails, the taxi remains in its current location. 
+Move to another location is always successful and taxi moves to the desired location with probability 1.
+Both pickup and move actions take one-time step each. Please provide the following: 
+
+\subsection{MDP Model for "move and pickup customers"}
+
+\begin{table}[]
+    \begin{tabular}{|c|l|l|l|l|}
+    \hline
+    s (current state)        &$a$ (action) & $s'$ (new state) & $P(s'|s,a)$ & $R(s,a,s')$ \\ \hline
+    \multirow{19}{*}{State1} &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \cline{2-5} 
+                             &            &                &                 &                 \\ \hline
+        \end{tabular}
+\end{table}
+\subsection{Initialize $\forall s,V^0(s)=0$ and calculate:}
+
+\subsubsection{$\forall s,V^1(s),V^2(s),V^3(s)$}
+
+\subsubsection{$\forall s,\pi^1(s),\pi^2(s),\pi^3(s)$}
+
+\section{\texttt{OpenAI FrozenLake} environment}
+
+In this question, you need to install OpenAI gym (\href{http://gym.openai.com/docs/}{http://gym.openai.com/docs/}). 
+Once the gym is installed, you have to implement \textit{Q-learning} for the \texttt{FrozenLake} environment (\href{https://gym.openai.com/envs/FrozenLake-v0/}{https://gym.openai.com/envs/FrozenLake-v0/}) in python using the gym library and show the rewards obtained. 
+You may use a discount factor of \texttt{0.95}. 
+Please provide the following two things in your solution for this question: 
+
+\subsection{Implement \textit{Q-learning}}
+Code that implements \textit{Q-learning} for \texttt{Frozenlake} example in \texttt{gym}. 
+Copy and paste the code in the solution pdf, and provide the actual code file also.
+
+\subsection{Episode return}
+For each episode, compute the total accumulated reward (also called \textit{episode return}). Plot the average return (over the last 100 episodes) while your agent is learning (x-axis will be the episode number, y-axis will be the average return over the last 100 episodes). \textbf{Make sure that you train for sufficiently many episodes so that convergence occurs}.
+
+The goal in this question is to ensure you familiarize yourself with \texttt{OpenAI} and understand how to implement \textit{Q-learning} in \texttt{OpenAI}. 
+There are many resources available online on implementing \textit{Q-learning} in \texttt{OpenAI} and the right value of learning rate for the \texttt{FrozenLake} example.
+You are free to refer to them, but please write your own code. 
+Tabular \textit{Q-learning} should work in this question.
+
+\section{\texttt{200Reviews.csv} SVD}
+
+In this question, you will employ \textit{Singular Value Decomposition} to obtain word embeddings and compare the generated word embeddings with the word embeddings generated using \texttt{word2vec}. 
+The corpus (or dataset) to be considered is "\texttt{200Reviews.csv}". You need to do the following: 
+
+\subsection{Parsing data}
+Parse the reviews in "\texttt{200Reviews.csv}", i.e., divide reviews into sentences and sentences into words and remove the stop words. You can employ the "\texttt{NLP-pipeline-example.ipynb}" example we talked about in class.
+
+\subsection{Co-occurence matrix}
+Create the co-occurrence matrix for all the remaining words (after stop words are eliminated), where the window of co-occurrence is 5 on either side of the word. 
+
+\subsection{Word embeddings}
+Apply SVD and obtain word embeddings of size 100.  
+
+Then, please generate word embeddings of size 100 using \texttt{Word2Vec.pynb} (from the NLP lecture) on the same "\texttt{200Reviews.csv}" dataset. 
+Please show comparison on few examples to understand which method works better. 
+Note your observations in your solution.
 
 \end{document}
