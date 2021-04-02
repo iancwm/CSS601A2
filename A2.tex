@@ -4,6 +4,7 @@
 \usepackage[a4paper, portrait, margin=1in]{geometry}
 \usepackage{hyperref}
 \usepackage{minted}
+\usepackage{mdframed}
 \usepackage{tikz}
 \usepackage{listings}
 \usepackage{multirow}
@@ -11,6 +12,7 @@
 \usepackage{xcolor}
 \usepackage{colortbl}
 \usepackage{framed}
+
 \definecolor{shadecolor}{RGB}{240,240,240}
 \newcommand{\mybox}[1]{\par\noindent\colorbox{shadecolor}
 {\parbox{\dimexpr\textwidth-2\fboxsep\relax}{#1}}}
@@ -631,6 +633,87 @@ Please provide the following two things in your solution for this question:}
 \mybox{Code that implements \textit{Q-learning} for \texttt{Frozenlake} example in \texttt{gym}. 
 Copy and paste the code in the solution pdf, and provide the actual code file also.}
 
+\textbf{Response:}
+
+First, we import the relevant packages and initialize the \texttt{gym} \texttt{FrozenLake-v0} environment.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+import numpy as np
+import gym
+import random
+import time
+from matplotlib import pyplot as plt
+from IPython.display import clear_output
+
+env = gym.make("FrozenLake-v0")
+\end{minted}
+\end{mdframed}
+
+We next define helper functions to run our $FrozenLake$ simulation. \texttt{run\_frozen\_lake} takes the all the parameters we define, and uses a \textit{Q-Table} to store calculations of rewards and returns an array of episodic returns. \texttt{plot\_reward} takes the data and produces a line graph of the \textit{episode return} over the a number of episodes defined. In our case it will be \texttt{100}.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+def run_frozen_lake(q_table,num_episodes, max_steps_per_episode, learning_rate, discount_rate, exploration_rate, min_exploration_rate, exploration_decay_rate):
+    rewards_all_episodes = []
+    for episode in range(num_episodes):
+        state = env.reset()
+        done = False
+        rewards_current_episode = 0
+        for step in range(max_steps_per_episode):
+            # Exploration-exploitation trade-off
+            exploration_rate_threshold = random.uniform(0, 1)
+            if exploration_rate_threshold > exploration_rate:
+                action = np.argmax(q_table[state,:]) 
+            else:
+                action = env.action_space.sample()
+            new_state, reward, done, info = env.step(action)
+            q_table[state, action] = q_table[state, action] * (1 - learning_rate) + \
+                learning_rate * (reward + discount_rate * np.max(q_table[new_state, :]))
+            state = new_state
+            rewards_current_episode += reward
+            if done == True:
+                break
+        exploration_rate = min_exploration_rate + (max_exploration_rate - min_exploration_rate) * np.exp(-exploration_decay_rate*episode)
+        rewards_all_episodes.append(rewards_current_episode)
+    return np.array(rewards_all_episodes)
+
+# Calculate and print the average reward per thousand episodes
+def plot_reward(rewards,num_episodes,count=100,filename='episodic_reward'):
+    data = np.array(np.split(rewards,num_episodes/count))
+    plt.plot(data.sum(axis=0))
+    plt.title(f"count={count}|num_episodes={num_episodes}")
+    if filename:
+        plt.savefig(f"{filename}".jpg)
+\end{minted}
+\end{mdframed}
+
+We now initialize the \textit{Q-Table}
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+action_space_size = env.action_space.n
+state_space_size = env.observation_space.n
+
+q_table = np.zeros((state_space_size, action_space_size))
+\end{minted}
+\end{mdframed}
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+num_episodes = 100000
+max_steps_per_episode = 100
+
+learning_rate = 0.001
+discount_rate = 0.95
+
+exploration_rate = 0.3
+max_exploration_rate = 1
+min_exploration_rate = 0.05
+exploration_decay_rate = 0.05
+\end{minted}
+\end{mdframed}
+
 \subsection{Episode return}
 \mybox{For each episode, compute the total accumulated reward (also called \textit{episode return}). Plot the average return (over the last 100 episodes) while your agent is learning (x-axis will be the episode number, y-axis will be the average return over the last 100 episodes). \textbf{Make sure that you train for sufficiently many episodes so that convergence occurs}.
 
@@ -639,6 +722,36 @@ There are many resources available online on implementing \textit{Q-learning} in
 You are free to refer to them, but please write your own code. 
 Tabular \textit{Q-learning} should work in this question.}
 
+We now run the simulation using the functions and parameters we have defined prior.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+rewards = run_frozen_lake(
+    q_table,
+    num_episodes,
+    max_steps_per_episode,
+    learning_rate,
+    discount_rate,
+    exploration_rate,
+    min_exploration_rate,
+    exploration_decay_rate)
+\end{minted}
+\end{mdframed}
+
+Using our \texttt{plot\_reward} function nets us the following:
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+plot_reward(rewards,num_episodes,100)
+\end{minted}
+\end{mdframed}
+
+\begin{figure}[hbt!]
+    \caption{Episodic Return for $FrozenLake$ simulation}
+    \centering
+    \includegraphics{episodic_reward.jpg}
+\end{figure}
+
 \section{\texttt{200Reviews.csv} SVD}
 
 \mybox{In this question, you will employ \textit{Singular Value Decomposition} to obtain word embeddings and compare the generated word embeddings with the word embeddings generated using \texttt{word2vec}. 
@@ -646,6 +759,121 @@ The corpus (or dataset) to be considered is "\texttt{200Reviews.csv}". You need 
 
 \subsection{Parsing data}
 \mybox{Parse the reviews in "\texttt{200Reviews.csv}", i.e., divide reviews into sentences and sentences into words and remove the stop words. You can employ the "\texttt{NLP-pipeline-example.ipynb}" example we talked about in class.}
+
+\textbf{Response:} We import the packages required to process text in our preamble and read the dataframe as shown.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+import pandas as pd
+import nltk
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+nltk.download('stopwords')
+import re
+from textblob import TextBlob
+from textblob import Word
+
+df = pd.read_csv(r"200Reviews.csv", encoding = "iso-8859-1")
+\end{minted}
+\end{mdframed}
+
+Next, we clean the text by replacing obvious mistakes and artifacts using a \texttt{dict}.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+replace_dict = {r"`":"",r"â":"a",r'"':"",r"<br />":"",r'\\':""}
+
+for k,v in replace_dict.items():
+    df["review"] = df["review"].str.replace(k,v)
+for i in range(5):
+    df["review"] = df["review"].str.replace(r"  "," ")
+\end{minted}
+\end{mdframed}
+
+We then tokenize the paragraphs into sentences.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+def tokenize_sentences(paragraph):
+    return nltk.sent_tokenize(paragraph)
+
+df["review_sentences"] = df["review"].map(tokenize_sentences)
+\end{minted}
+\end{mdframed}
+
+Defining helper functions that feed into one main function \texttt{process\_text} that corrects spelling, converts text to lower case, removes stopwords, and tokenizes words.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+def correct_spelling(word):
+    return str(TextBlob(word).correct())
+
+def to_lower(word):
+    return word.lower()
+
+def lemmatize(words):
+    result = []
+    lemmatizer = WordNetLemmatizer()
+    for w in words:
+        result.append(lemmatizer.lemmatize(w))
+    return result
+
+def check_stopword(word):
+    stopWords = set(stopwords.words('english'))   
+    if word not in stopWords:
+        return True
+    else:
+        return False
+
+def tokenize_word(s):
+    wrd_list =  re.split("[^\w]",s)
+    tokenized_words = []
+    for focus_wrd in wrd_list.copy():
+        focus_wrd = focus_wrd.strip()
+        if (focus_wrd == ""):
+            continue
+        if " " in focus_wrd:
+            print (focus_wrd)
+            tokenized_words.extend(tokenize_word(focus_wrd))
+            continue
+        tokenized_words.append(focus_wrd)
+    return tokenized_words
+
+def process_text(sentences):
+    wordlist=[]
+    for k in range(len(sentences)):
+        words = tokenize_word(sentences[k])    
+        words = lemmatize (words) 
+        for w in words:            
+            w = to_lower(w)            
+            if check_stopword(w):
+                wordlist.append(w)
+    return wordlist
+
+df["review_words"] = df["review_sentences"].map(process_text)
+df["new_review"] = df["review_words"].apply(lambda w: " ".join(w))
+
+\end{minted}
+\end{mdframed}
+
+The results of the text processing are as follows:
+
+\begin{verbatim}
+df['new_review']
+
+0      stuff going moment mj started listening music ...
+1      classic war worlds timothy hines entertaining ...
+2      film start manager nicholas bell giving welcom...
+3      must assumed praised film greatest filmed oper...
+4      superbly trashy wondrously unpretentious 80 ex...
+                                ...                        
+195    collection documentary last 11 minute 9 second...
+196    movie ha lot comedy dark gordon liu shine one ...
+197    watched kid film year missed come tigers first...
+198    probably heard phrase come movie â herbie full...
+199    wa thirteen movie came television far superior...
+Name: new_review, Length: 200, dtype: object
+\end{verbatim}
 
 \subsection{Co-occurence matrix}
 \mybox{Create the co-occurrence matrix for all the remaining words (after stop words are eliminated), where the window of co-occurrence is 5 on either side of the word.}
