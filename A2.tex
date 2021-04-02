@@ -537,9 +537,87 @@ Both pickup and move actions take one-time step each. Please provide the followi
 
 \subsection{Initialize $\forall s,V^0(s)=0$ and calculate:}
 
+\textbf{Response:}
+
+Computations are done in the following table
+
+\begin{center}
+    \begin{tabular}{|l|l|c|r|r|c|r|r|c|r|c|c|}
+    \hline
+    $s$ & $a$  & $V^0(s)$ & $Q^1(s,a)$ & $V^1(s)$ & $\pi^1(s)$ & $Q^2(s,a)$ & $V^2(s)$ & $\pi^2(s)$ & $Q^3(s,a)$ & $V^3(s)$ & $\pi^3(s)$ \\ \hline
+    L1         & L1 & 0      & 0.00    & 1.21  & L3      & 0.85    & 1.33  & L3      & 0.93    & 1.35  & L3      \\ \hline
+    L1         & L2 & 0      & 0.84    & 1.21  & L3      & 0.98    & 1.33  & L3      & 1.00    & 1.35  & L3      \\ \hline
+    L1         & L3 & 0      & 1.21    & 1.21  & L3      & 1.33    & 1.33  & L3      & 1.35    & 1.35  & L3      \\ \hline
+    L1         & L4 & 0      & 1.03    & 1.21  & L3      & 1.12    & 1.33  & L3      & 1.13    & 1.35  & L3      \\ \hline
+    L2         & L2 & 0      & 0.00    & 3.96  & L2      & 0.79    & 5.86  & L2      & 1.17    & 6.77  & L2      \\ \hline
+    L2         & L2 & 0      & 2.88    & 3.96  & L2      & 4.15    & 5.86  & L2      & 4.76    & 6.77  & L2      \\ \hline
+    L2         & L2 & 0      & 3.96    & 3.96  & L2      & 5.86    & 5.86  & L2      & 6.77    & 6.77  & L2      \\ \hline
+    L3         & L3 & 0      & 0.00    & 0.69  & L1      & 0.62    & 0.73  & L1      & 0.66    & 0.73  & L1      \\ \hline
+    L3         & L1 & 0      & 0.69    & 0.69  & L1      & 0.73    & 0.73  & L1      & 0.73    & 0.73  & L1      \\ \hline
+    L3         & L4 & 0      & 0.37    & 0.69  & L1      & 0.40    & 0.73  & L1      & 0.40    & 0.73  & L1      \\ \hline
+    L4         & L4 & 0      & 0.00    & 3.02  & L1      & 1.21    & 4.20  & L1      & 1.68    & 4.66  & L1      \\ \hline
+    L4         & L1 & 0      & 3.02    & 3.02  & L1      & 4.20    & 4.20  & L1      & 4.66    & 4.66  & L1      \\ \hline
+    L4         & L2 & 0      & 1.26    & 3.02  & L1      & 1.89    & 4.20  & L1      & 2.14    & 4.66  & L1      \\ \hline
+    \end{tabular}
+\end{center}
+
 \subsubsection{$\forall s,V^1(s),V^2(s),V^3(s)$}
 
+\textbf{Calculations for $V^1$}
+
+\begin{alignat*}{3}
+    &V^1_{L1}(s) &&= \underline{\textbf{1.21}} && \\
+    &V^1_{L2}(s) &&= \underline{\textbf{3.96}} && \\
+    &V^1_{L3}(s) &&= \underline{\textbf{0.69}} && \\
+    &V^1_{L4}(s) &&= \underline{\textbf{3.02}} && \\
+\end{alignat*}
+
+\textbf{Calculations for $V^2$}
+
+\begin{alignat*}{3}
+    &V^2_{L1}(s) &&= \underline{\textbf{1.33}} && \\
+    &V^2_{L2}(s) &&= \underline{\textbf{5.86}} && \\
+    &V^2_{L3}(s) &&= \underline{\textbf{0.73}} && \\
+    &V^2_{L4}(s) &&= \underline{\textbf{4.20}} && \\
+\end{alignat*}
+
+\textbf{Calculations for $V^3$}
+
+\begin{alignat*}{3}
+    &V^3_{L1}(s) &&= \underline{\textbf{1.35}} && \\
+    &V^3_{L2}(s) &&= \underline{\textbf{6.77}} && \\
+    &V^3_{L3}(s) &&= \underline{\textbf{0.73}} && \\
+    &V^3_{L4}(s) &&= \underline{\textbf{4.66}} && \\
+\end{alignat*}
+
 \subsubsection{$\forall s,\pi^1(s),\pi^2(s),\pi^3(s)$}
+
+\textbf{Response for $\pi^1$}
+
+\begin{alignat*}{3}
+    &\pi^1_{L1}(s) &&= \underline{\textbf{$L3$}} && \\
+    &\pi^1_{L2}(s) &&= \underline{\textbf{$L2$}} && \\
+    &\pi^1_{L3}(s) &&= \underline{\textbf{$L1$}} && \\
+    &\pi^1_{L4}(s) &&= \underline{\textbf{$L1$}} && \\
+\end{alignat*}
+
+\textbf{Response for $\pi^2$}
+
+\begin{alignat*}{3}
+    &\pi^2_{L1}(s) &&= \underline{\textbf{$L3$}} && \\
+    &\pi^2_{L2}(s) &&= \underline{\textbf{$L2$}} && \\
+    &\pi^2_{L3}(s) &&= \underline{\textbf{$L1$}} && \\
+    &\pi^2_{L4}(s) &&= \underline{\textbf{$L1$}} && \\
+\end{alignat*}
+
+\textbf{Response for $\pi^3$}
+
+\begin{alignat*}{3}
+    &\pi^3_{L1}(s) &&= \underline{\textbf{$L3$}} && \\
+    &\pi^3_{L2}(s) &&= \underline{\textbf{$L2$}} && \\
+    &\pi^3_{L3}(s) &&= \underline{\textbf{$L1$}} && \\
+    &\pi^3_{L4}(s) &&= \underline{\textbf{$L1$}} && \\
+\end{alignat*}
 
 \section{\texttt{OpenAI FrozenLake} environment}
 
