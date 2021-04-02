@@ -233,7 +233,7 @@ Non-consistent nodes in the following table are coloured \colorbox{red}{RED}
     \hline
     \rowcolor{red}C & 8 & D & 6\tabularnewline
     \hline
-    C & 8 & D & 13\tabularnewline
+    C & 8 & F & 13\tabularnewline
     \hline
     D & 5 & H & 6\tabularnewline
     \hline
@@ -411,7 +411,165 @@ The code for the Simulator is provided in the zip file \texttt{"SelfDrivingCar.z
 installation/running of simulator and code details are provided in the file \texttt{"SelfDrivingCar.pdf"}
 (present in the \texttt{.zip} file).}
 
+\textbf{Response:} Please see attached \texttt{python} script.
+
 \subsection{Submit code in \texttt{.pdf}}
+
+\textbf{Response:}
+
+\subsubsection{Algorithm 1 - \texttt{drive}}
+
+This is the code for the main drive code. It depends on the subsequent helper functions.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+def drive(self, goalstates, inputs):    
+    
+    path_list = []
+    destination_reached = []
+    action_order = []
+    path_lengths = []
+    start = self.state
+
+    for goal in goalstates:
+        goalReached, path = self.AStar(start["location"], goal, inputs)
+        destination_reached.append(goalReached)
+        path_list.append(path)
+        path_lengths.append(len(path))
+    
+    if True in destination_reached:        
+        best_path = [path_list[i] for i in range(len(path_list)) if (destination_reached[i] == True) and (len(path_list[i]) == min(path_lengths))]
+        action_order.extend(best_path)
+    else:        
+        longest_path = [path_list[i] for i in range(len(path_list)) if (len(path_list[i]) == max(path_lengths))]
+        action_order.extend(longest_path)
+
+    movements = {
+        (0, 3): "forward-3x", 
+        (0, 2): "forward-2x", 
+        (0, 1): "forward", 
+        (-1, 1): "left", 
+        (1, 1): "right", 
+        (0, 0): None}
+    try:
+        action_sequence = [movements[(action_order[0][i+1][0] - action_order[0][i][0], action_order[0][i+1][1] - action_order[0][i][1])] for i in range(len(action_order[0])-1)]
+    except:
+        action_sequence = [None]
+    
+    return action_sequence
+\end{minted}
+\end{mdframed}
+
+\subsubsection{Algorithm 2 - \texttt{AStar}}
+
+Implementation of $A* Search$ to car to consider which action to take. Relies on \texttt{applyAction} to function properly.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+def AStar(self, start, goal, state):    
+    closedSet = []
+    openSet = [start]
+    cameFrom = {}
+    gScore = {start: 0}
+    fScore = {start: self.heuristic_cost_estimate(start, goal)}
+    current = []
+    
+    while len(openSet) > 0:
+        min_idx = list(fScore.values()).index(min(fScore.values()))
+        current = list(fScore.keys())[min_idx]
+        if current == goal["location"]:
+            return True, self.reconstruct_path(cameFrom, current)
+        del fScore[current]
+        openSet.remove(current)
+        closedSet.append(current)
+        
+        for action in ["forward-3x", "forward-2x", "forward", "left", "right"]:
+            neighbor = self.applyAction(current, action, state, goal["location"])
+            if neighbor == current:
+                continue
+            tentative_gScore = gScore[current] + 1
+            if neighbor not in openSet:
+                openSet.append(neighbor)
+            elif tentative_gScore >= gScore[neighbor]:
+                continue
+            cameFrom[neighbor] = current
+            gScore[neighbor] = tentative_gScore
+            fScore[neighbor] = gScore[neighbor] + self.heuristic_cost_estimate(neighbor, goal)
+        
+    if current == goal["location"]:
+        return True, self.reconstruct_path(cameFrom, current)
+    else:
+        return False, self.reconstruct_path(cameFrom, current)
+\end{minted}
+\end{mdframed}
+
+\subsubsection{Algorithm 2.5 - \texttt{applyAction}}
+
+Helper function to determine if a move is valid and apply it. For invalid moves, returns the current position \textit{i.e.} no action
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+def applyAction(self, current, action, state, goal):
+    movements = {
+        "forward-3x": [(0, 1), (0, 2), (0, 3)], 
+        "forward-2x": [(0, 1), (0, 2)], 
+        "forward": [(0, 1)], 
+        "left": [(-1, 0), (-1, 1)], 
+        "right": [(1, 0), (1, 1)], 
+        None: [(0, 0)]}
+    
+    target_row = current[0]
+    target_col = current[1]
+    valid_move = True
+    
+    for movement in movements[action]:
+        if (target_row + movement[0] >= len(state)) or \
+            (target_row + movement[0] < 0) or \
+            (target_col + movement[1]) >= len(state[0]):
+            return current
+                
+        if state[target_row + movement[0]][target_col + movement[1]] == 1:
+            valid_move = False
+            break
+        
+    if abs(target_row + movements[action][-1][0] - goal[0]) > abs(goal[1] - (target_col + movements[action][-1][1])):
+        return current
+    
+    if valid_move:
+        target_row += movements[action][-1][0]
+        target_col += movements[action][-1][1]
+    return (target_row, target_col)
+\end{minted}
+\end{mdframed}
+
+\subsubsection{Algorithm 3 - \texttt{heuristic\_cost\_estimate}}
+
+Estimates the heuristic cost from current node.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+def heuristic_cost_estimate(self, start, goal):
+    result = abs(goal["location"][1] - start[1]) + abs(goal["location"][0] - start[0]) / 2
+    return result
+\end{minted}
+\end{mdframed}
+
+\subsubsection{Algorithm 4 - \texttt{reconstruct\_path}}
+
+Helper function to reconstruct the path from start to current node.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+def reconstruct_path(self, cameFrom, current):
+    total_path = []
+    while current in cameFrom.keys():
+        total_path.append(current)
+        current = cameFrom[current]
+    total_path.append(current)
+    total_path = total_path[::-1]
+    return total_path
+\end{minted}
+\end{mdframed}
 
 \section{Taxi Driver Markov Decision Process}
 \mybox{Taxi drivers in Singapore can pick up customers from any location that is not on highways. 
