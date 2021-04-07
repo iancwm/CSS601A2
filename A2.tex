@@ -205,12 +205,15 @@ Since $h(n)\leq c(n,g) \forall n$, the heuristic is \textit{admissible}.
 \subsubsection{Is the heuristic consistent? Provide justification}
 \textbf{Response:} No, the heuristic is not \textit{consistent}.
 
-A heuristic is \textit{consistent} only if its estimate is \underline{always} less than or equal to the estimated distance from any neighbouring vertex to the goal, plus the cost of reaching that neighbour. More formally:
+A heuristic is \textit{consistent} only if 
+
+a) It is \textit{admissible} and;
+
+b) Its estimate is \underline{always} less than or equal to the estimated distance from any neighbouring vertex to the goal, plus the cost of reaching that neighbour. More formally:
 
 \[h(n) \leq c(n,p) + h(p) \forall n\]
 
 Non-consistent nodes in the following table are coloured \colorbox{red}{RED}
-
 
 \begin{center}
     \begin{tabular}{|c|c|c|c|} 
