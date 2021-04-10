@@ -1037,26 +1037,12 @@ tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 sentences = []
 print("Reviews Count:", len(df["review"]))
 count = 0
-print("Begin parsing train set")
-print("Sentences parsed:", end = " ")
 for review in df["review"]:
     sentences += review_to_sentence(review, tokenizer, True)
     count += 1
-    print(count, end = " ")
-    
-print("\nDone!")
 
 \end{minted}
 \end{mdframed}
-
-The results of the text processing are as follows:
-
-\begin{lstlisting}
-    Reviews Count: 200
-    Begin parsing train set
-    Sentences parsed: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199 200 
-    Done!
-\end{lstlisting}
 
 \subsection{Co-occurence matrix}
 \mybox{Create the co-occurrence matrix for all the remaining words (after stop words are eliminated), where the window of co-occurrence is 5 on either side of the word.}
@@ -1078,10 +1064,8 @@ def cooccurence_matrix(sentences, window_size = 5):
     size = len(wordlist)
     print(f"[{size}] unique words in corpus")
     result_matrix = pd.DataFrame(np.zeros((size, size)), index = wordlist, columns = wordlist)
-    print(f"Now counting co-occurences for [{len(sentences)}] Sentences...\nProgress: ", sep = "", end = "")
-    for idx, sentence in enumerate(sentences):
-        if idx % 100 == 0:
-            print(f"{idx}...", end = " ")
+    print(f"Now counting co-occurences for [{len(sentences)}] sentences...")
+    for idx, sentence in enumerate(sentences):        
         sentence_length = len(sentence)
         for sentence_index, focus_word in enumerate(sentence):
             # Slide window around each focus word
@@ -1108,45 +1092,44 @@ matrix = cooccurence_matrix(sentences, window_size)
 \end{mdframed}
 
 \begin{lstlisting}
+itch  nudie  rest  godless  surprisingly  overpriced  diesel  \
+itch           0.0    0.0   0.0      0.0           0.0         0.0     0.0   
+nudie          0.0    0.0   0.0      0.0           0.0         0.0     0.0   
+rest           0.0    0.0   0.0      0.0           0.0         0.0     0.0   
+godless        0.0    0.0   0.0      0.0           0.0         0.0     0.0   
+surprisingly   0.0    0.0   0.0      0.0           0.0         0.0     0.0   
+...            ...    ...   ...      ...           ...         ...     ...   
+bigelow        0.0    0.0   0.0      0.0           0.0         0.0     0.0   
+unfulfilled    0.0    0.0   0.0      0.0           0.0         0.0     0.0   
+phillips       0.0    0.0   0.0      0.0           0.0         0.0     0.0   
+dollar         0.0    0.0   0.0      0.0           0.0         0.0     0.0   
+previous       0.0    0.0   0.0      0.0           0.0         0.0     0.0   
 
-andrew  frolic  whose  hickox  prison  pull  creativity  \
-andrew           0.0     0.0    0.0     0.0     0.0   0.0         0.0   
-frolic           0.0     0.0    1.0     0.0     0.0   0.0         0.0   
-whose            0.0     1.0    0.0     0.0     0.0   0.0         0.0   
-hickox           0.0     0.0    0.0     0.0     0.0   0.0         0.0   
-prison           0.0     0.0    0.0     0.0     0.0   0.0         0.0   
-...              ...     ...    ...     ...     ...   ...         ...   
-misanthropic     0.0     0.0    0.0     0.0     0.0   0.0         0.0   
-playing          0.0     0.0    0.0     0.0     0.0   0.0         0.0   
-depicts          0.0     0.0    0.0     0.0     0.0   0.0         0.0   
-filthy           0.0     0.0    0.0     0.0     0.0   0.0         0.0   
-moody            0.0     0.0    0.0     0.0     0.0   0.0         0.0   
+                charles  either  spite  ...  anno  heavily  lie  return  \
+itch              0.0     0.0    0.0  ...   0.0      0.0  0.0     0.0   
+nudie             0.0     0.0    0.0  ...   0.0      0.0  0.0     0.0   
+rest              0.0     0.0    0.0  ...   0.0      0.0  0.0     0.0   
+godless           0.0     0.0    0.0  ...   0.0      0.0  0.0     0.0   
+surprisingly      0.0     0.0    0.0  ...   0.0      0.0  0.0     0.0   
+...               ...     ...    ...  ...   ...      ...  ...     ...   
+bigelow           0.0     0.0    0.0  ...   0.0      0.0  0.0     0.0   
+unfulfilled       0.0     0.0    0.0  ...   0.0      0.0  0.0     0.0   
+phillips          0.0     0.0    0.0  ...   0.0      0.0  0.0     1.0   
+dollar            0.0     0.0    0.0  ...   0.0      0.0  1.0     0.0   
+previous          0.0     0.0    0.0  ...   0.0      0.0  0.0     0.0   
 
-                circumstance  rabies  1986  ...  herein  kiss  decides  \
-andrew                 0.0     0.0   0.0  ...     0.0   0.0      0.0   
-frolic                 0.0     0.0   0.0  ...     0.0   0.0      0.0   
-whose                  0.0     0.0   0.0  ...     0.0   0.0      0.0   
-hickox                 0.0     0.0   0.0  ...     0.0   0.0      0.0   
-prison                 0.0     0.0   0.0  ...     0.0   0.0      0.0   
-...                    ...     ...   ...  ...     ...   ...      ...   
-misanthropic           0.0     0.0   0.0  ...     0.0   0.0      0.0   
-playing                0.0     0.0   0.0  ...     0.0   0.0      0.0   
-depicts                0.0     0.0   0.0  ...     0.0   0.0      0.0   
-filthy                 0.0     0.0   0.0  ...     0.0   0.0      0.0   
-moody                  0.0     0.0   0.0  ...     0.0   0.0      0.0   
-
-                conclude  uneven  misanthropic  playing  depicts  filthy  moody  
-andrew             0.0     0.0           0.0      0.0      0.0     0.0    0.0  
-frolic             0.0     0.0           0.0      0.0      0.0     0.0    0.0  
-whose              0.0     0.0           0.0      0.0      0.0     0.0    0.0  
-hickox             0.0     0.0           0.0      0.0      0.0     0.0    0.0  
-prison             0.0     0.0           0.0      0.0      0.0     0.0    0.0  
-...                ...     ...           ...      ...      ...     ...    ...  
-misanthropic       0.0     0.0           0.0      0.0      0.0     0.0    0.0  
-playing            0.0     0.0           0.0      0.0      0.0     0.0    0.0  
-depicts            0.0     0.0           0.0      0.0      0.0     0.0    0.0  
-filthy             0.0     0.0           0.0      0.0      0.0     0.0    0.0  
-moody              0.0     0.0           0.0      0.0      0.0     0.0    0.0  
+                shecker  bigelow  unfulfilled  phillips  dollar  previous  
+itch              0.0      0.0          0.0       0.0     0.0       0.0  
+nudie             0.0      0.0          0.0       0.0     0.0       0.0  
+rest              0.0      0.0          0.0       0.0     0.0       0.0  
+godless           0.0      0.0          0.0       0.0     0.0       0.0  
+surprisingly      0.0      0.0          0.0       0.0     0.0       0.0  
+...               ...      ...          ...       ...     ...       ...  
+bigelow           0.0      0.0          0.0       0.0     0.0       0.0  
+unfulfilled       0.0      0.0          0.0       0.0     0.0       0.0  
+phillips          0.0      0.0          0.0       0.0     0.0       0.0  
+dollar            0.0      0.0          0.0       0.0     0.0       0.0  
+previous          0.0      0.0          0.0       0.0     0.0       0.0 
 
 [6027 rows x 6027 columns]
 \end{lstlisting}
@@ -1154,9 +1137,9 @@ moody              0.0     0.0           0.0      0.0      0.0     0.0    0.0
 \subsection{Word embeddings}
 \mybox{Apply SVD and obtain word embeddings of size 100.}
 
-\textbf{Response:} We now import of packages used for Singular Value Decomposition of our co-occurence matrix from the previous section
+\textbf{Response:} We now import of packages used for Singular Value Decomposition of our co-occurence matrix into $U$, $S$ and $V^T$.
 
-To reduce our dimensionality, we limit our word embedding size to 100.
+To reduce our dimensionality, we limit our word embedding size to \texttt{100}.
 
 \begin{mdframed}[backgroundcolor=shadecolor]
 \begin{minted}[fontsize=\footnotesize,breaklines]{python}
@@ -1193,10 +1176,12 @@ Please show comparison on few examples to understand which method works better. 
 
 \textbf{Response:}
 
+Here we create the \texttt{Word2Vec} model and set values for the various parameters.
+The same sentences are used as input into the model to ensure comparability with our \texttt{SVD} model.
+
 \begin{mdframed}[backgroundcolor=shadecolor]
 \begin{minted}[fontsize=\footnotesize,breaklines]{python}
-# Creating the model and setting values for the various parameters
-# Using the same sentences that are input into the model to maintain comparability
+
 num_features = 100  # Word vector dimensionality
 min_word_count = 1 # Minimum word count
 num_workers = 4     # Number of parallel threads
@@ -1257,7 +1242,10 @@ def most_similar(matrix, target_word, number=10):
     similarity_rankings = np.argsort(feature_cos_similarities)
     for i in range(1, number+2):
         if matrix.index[similarity_rankings[-i]] != target_word:
-            print(i-1, matrix.index[similarity_rankings[-i]], feature_cos_similarities[similarity_rankings[-i]])
+            ranking = i-1
+            result_word = matrix.index[similarity_rankings[-i]]
+            result_cos_sim = feature_cos_similarities[similarity_rankings[-i]]
+            print(f"{ranking}\t{result_word}\t{result_cos_sim}")
     print("-"*56)
     
 def doesnt_match(matrix, words):
@@ -1288,6 +1276,7 @@ def doesnt_match(matrix, words):
     
     result = max(oddwords.keys(), key=oddwords.get)
     print(f"Odd Word: {result}")
+
 \end{minted}
 \end{mdframed}
 
@@ -1295,18 +1284,16 @@ We apply above functions by iterating through our test case.
 
 \begin{mdframed}[backgroundcolor=shadecolor]
 \begin{minted}[fontsize=\footnotesize,breaklines]{python}
+similar_words_test = ["austin", "york", "city", "italy"]
 
-# Words that will be tested on
-similarwords = ["thrill", "horror", "comedy", "romance"]
-
-for word in similarwords:
-    print("Most Similar Words based on SVD Count Based Method")
+for word in similar_words_test:
+    print("Most Similar Words - SVD")
     most_similar(embedding_matrix, word)
-    print("Most Similar Words based on Word2Vec")
-    print("Target Word:", word)
+    print("Most Similar Words - Word2Vec")
+    print(f"Target Word is [{word}]")
     count = 1
     for word2, score in model.wv.most_similar(word):
-        print(count, word2, score)
+        print(f"{count}\t{word2}\t{score}")
         count += 1
     print("="*56)
     print()
@@ -1317,164 +1304,154 @@ for word in similarwords:
 
 {\large Word Similarity}
 
-Both techniques give mixed results for word similarity. 
-
-For instance, the word "horror" is correctly associated with Edgar Allen Poe using our \texttt{SVD} trained model. However, the rest of the words do not seem to have much bearing. 
-
-\texttt{Word2Vec} returns much more vague results, with words like "film" and "character" being the closest associated words from my personal opinion.
-
-For "romance" the results are even worse. "romance" was even associated with "zombie" for our \texttt{Word2Vec} case.
-
-In conclusion, both approaches perform differently for different words as evidenced by the difference in scores between each approach on the same word.
+\texttt{SVD} lends itself to being more generalizable. The word "york" was correctly associated with "new" for our \texttt{SVD} method, and resulted in higher cosine similarity overall. 
+\texttt{Word2Vec} seems to return more ambiguous results, with words like "mention" and "1" being returned. The cosine similarity scores are also much lower.
 
 Our results for word similarity are as follows:
 
 \begin{lstlisting}
-Most Similar Words based on SVD Count Based Method
-Target word is [thrill]
+Most Similar Words - SVD
+Target word is [austin]
 --------------------------------------------------------
-0 overjoy 1.0
-2 weep 0.9046623917319988
-3 wiz 0.878417848436146
-4 alternative 0.853546730780722
-5 grass 0.853546730780722
-6 fascinating 0.8470791202164661
-7 ceremony 0.8435123498010818
-8 caribbean 0.7972308062841066
-9 starz 0.7943825761227766
-10 worried 0.7907181622775727
+1	festival	0.887350364268371
+2	sxsw	0.8572945466152796
+3	kathy	0.5450597174537049
+4	seriousness	0.5427425385769143
+5	circuit	0.5065202090379028
+6	misfortune	0.5062521850690211
+7	spite	0.5005133418113804
+8	uncaring	0.49041412866848055
+9	groundbreaking	0.4899315906535469
+10	contra	0.48787927965698075
 --------------------------------------------------------
-Most Similar Words based on Word2Vec
-Target Word: thrill
-1 fossilized 0.3384301960468292
-2 cause 0.318146288394928
-3 sitcom 0.3180883526802063
-4 extremely 0.3119494915008545
-5 miserable 0.3063412606716156
-6 seek 0.30342936515808105
-7 suggest 0.29555368423461914
-8 coalition 0.292111873626709
-9 tight 0.2920524775981903
-10 thumb 0.2899966239929199
+Most Similar Words - Word2Vec
+Target Word is [austin]
+1	plod	0.36693060398101807
+2	krabb	0.363259494304657
+3	weekly	0.3621005713939667
+4	anything	0.36155253648757935
+5	solely	0.3535256087779999
+6	reason	0.34381553530693054
+7	indulge	0.33991739153862
+8	innocent	0.33880218863487244
+9	dive	0.33504369854927063
+10	list	0.33478525280952454
 ========================================================
 
-Most Similar Words based on SVD Count Based Method
-Target word is [horror]
+Most Similar Words - SVD
+Target word is [york]
 --------------------------------------------------------
-1 edgar 0.6768376528294273
-2 interview 0.6651176540690175
-3 allan 0.6470243359005875
-4 panacea 0.6407844605771518
-5 wager 0.6300636665392728
-6 lock 0.6166518351521574
-7 helicopter 0.6061206116425559
-8 foster 0.5987050637694958
-9 anthology 0.5944347845125878
-10 cassandra 0.5847528162847823
+1	2022	0.9044145959184939
+2	batch	0.8879439879308149
+3	gritty	0.8645660952783314
+4	new	0.8555665245327292
+5	paris	0.8276747682414821
+6	hogan	0.8057504380016709
+7	jose	0.7836723283228862
+8	semester	0.7825126475373403
+9	stepfather	0.7553642939334105
+10	depressing	0.7377359781613702
 --------------------------------------------------------
-Most Similar Words based on Word2Vec
-Target Word: horror
-1 go 0.8576502203941345
-2 like 0.8498179912567139
-3 film 0.8475027084350586
-4 one 0.846524715423584
-5 think 0.8419342041015625
-6 way 0.8391382694244385
-7 character 0.8364621996879578
-8 get 0.835287868976593
-9 well 0.8350684642791748
-10 see 0.8343316316604614
+Most Similar Words - Word2Vec
+Target Word is [york]
+1	1	0.4412270784378052
+2	u	0.41901570558547974
+3	call	0.40736520290374756
+4	men	0.4017049968242645
+5	mention	0.4016973674297333
+6	genius	0.39517104625701904
+7	love	0.39487966895103455
+8	performance	0.39213111996650696
+9	come	0.391371488571167
+10	main	0.3908534348011017
 ========================================================
 
-Most Similar Words based on SVD Count Based Method
-Target word is [comedy]
+Most Similar Words - SVD
+Target word is [city]
 --------------------------------------------------------
-1 screwball 0.7250405827707767
-2 wit 0.7136601982377639
-3 operate 0.7136601982377637
-4 vein 0.6818061612483495
-5 hawn 0.6398410238592813
-6 spirited 0.636001653583391
-7 thoroughly 0.6274431698054069
-8 beneath 0.6203970575781339
-9 surface 0.6203970575781339
-10 parable 0.6068151913645826
+1	antidote	0.8026906599322
+2	gritty	0.750512787736898
+3	imperative	0.7239302180932637
+4	hbo	0.62096048630656
+5	york	0.6064801824306039
+6	complain	0.601305994663535
+7	moviegoer	0.6007629627639214
+8	commercial	0.5562886911570853
+9	batch	0.5453319410869741
+10	2022	0.5283350474516787
 --------------------------------------------------------
-Most Similar Words based on Word2Vec
-Target Word: comedy
-1 make 0.7479692697525024
-2 go 0.7388730049133301
-3 bad 0.7355589270591736
-4 film 0.7346001863479614
-5 movie 0.7264123558998108
-6 seem 0.7254176139831543
-7 get 0.7252454161643982
-8 try 0.7238624691963196
-9 watch 0.7223445177078247
-10 show 0.7219111323356628
+Most Similar Words - Word2Vec
+Target Word is [city]
+1	family	0.555666446685791
+2	fact	0.5274180173873901
+3	seem	0.49257296323776245
+4	people	0.4901282787322998
+5	need	0.4830361604690552
+6	like	0.4790402054786682
+7	character	0.4723717272281647
+8	one	0.4691973328590393
+9	make	0.4652383327484131
+10	without	0.46513813734054565
 ========================================================
 
-Most Similar Words based on SVD Count Based Method
-Target word is [romance]
+Most Similar Words - SVD
+Target word is [italy]
 --------------------------------------------------------
-1 tabu 0.5293631301273979
-2 puberty 0.514623569746616
-3 34 0.512576568231544
-4 aged 0.4777813093573541
-5 yr 0.46953031469126016
-6 greenquist 0.45238895365555926
-7 cursed 0.44220470762691644
-8 learn 0.4360842118936542
-9 engineer 0.4284360059933918
-10 compact 0.42566218513482196
+1	79	0.6857600299685437
+2	coolness	0.6639872949390139
+3	chunk	0.6356645906188271
+4	munch	0.6222585239643916
+5	z	0.6166522242990661
+6	flick	0.5799558102363314
+7	indirect	0.5776614885168125
+8	lucio	0.569373211008427
+9	mostly	0.5521692639423955
+10	closer	0.5455052713854457
 --------------------------------------------------------
-Most Similar Words based on Word2Vec
-Target Word: romance
-1 year 0.41749727725982666
-2 make 0.4086826741695404
-3 low 0.40472960472106934
-4 much 0.3980807363986969
-5 zombie 0.3898499608039856
-6 night 0.3881601095199585
-7 give 0.3855125904083252
-8 split 0.38508740067481995
-9 know 0.3837257921695709
-10 support 0.38248103857040405
+Most Similar Words - Word2Vec
+Target Word is [italy]
+1	conversation	0.3565264046192169
+2	abyss	0.34354156255722046
+3	brady	0.32845184206962585
+4	boggy	0.32444268465042114
+5	lark	0.32045382261276245
+6	pre	0.3181809186935425
+7	overlong	0.3147217333316803
+8	intolerably	0.312182754278183
+9	sale	0.3100474774837494
+10	feeling	0.30068132281303406
 ========================================================
-    
 \end{lstlisting}
 
 {\large Odd Word Out}
 
 In terms of "odd word out" applications, our \texttt{SVD} seemed to perform better for the second test case.
 
-It correctly determined that man was not associated with the other animals, whereas \texttt{Word2Vec} chose "lion"
+It correctly determined that "snake" was not associated with the other terms for humans, whereas \texttt{Word2Vec} was not able to make the distinction.
 
 Our results are as follows:
 
 \begin{mdframed}[backgroundcolor=shadecolor]
 \begin{minted}[fontsize=\footnotesize,breaklines]{python}
-doesntmatch = ["man woman dog child kitchen", 
-               "cat dog lion tiger man"]
+odd_word_out_test = ["movie cinema horror comedy city", 
+               "mommy daddy kid son daughter snake"]
 
-for words in doesntmatch:
-    print("List of Words:", words)
-    print("SVD ", end = "")
-    doesnt_match(embedding_matrix, words.split())
-    print("Word2Vec Odd Word:", model.wv.doesnt_match(words.split()))
+for words in odd_word_out_test:
+    print(f"Now differentiating between the following words -> {words}")
+    print(f"Odd word out - SVD:\t{odd_word_out(embedding_matrix, words.split())}")
+    print(f"Odd word out - Word2Vec:\t{model.wv.doesnt_match(words.split())}")
     print()
-
 \end{minted}
 \end{mdframed}
 
 \begin{lstlisting}
-List of Words: man woman dog child kitchen
-SVD Odd Word: kitchen
-Word2Vec Odd Word: kitchen
+Now differentiating between the following words -> movie cinema horror comedy city
+Odd word out - SVD:	city
+Odd word out - Word2Vec:	city
 
-List of Words: cat dog lion tiger man
-SVD Odd Word: man
-Word2Vec Odd Word: lion    
+Now differentiating between the following words -> mommy daddy kid son daughter snake
+Odd word out - SVD:	snake
+Odd word out - Word2Vec:	daddy 
 \end{lstlisting}
 
 \end{document}
