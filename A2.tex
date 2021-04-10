@@ -372,12 +372,12 @@ Cost = 3 + 4 + 1 + 4 + 3 = \underline{\textbf{15}}
     \hline
     4 & $H^{D,2}, F^{C,7}, B^{S,11}, A^{S,13}$ & $H^{D,2}$ & $G^{H,0}$\\
     \hline
-    5 & $G^{H,3}, F^{C,7}, B^{S,11}, A^{S,13}$ & $G^{H,0}$ & nil\\
+    5 & $G^{H,0}, F^{C,7}, B^{S,11}, A^{S,13}$ & $G^{H,0}$ & nil\\
     \hline
     \end{tabular}
 \end{center}
 
-\textcolor{red}{*Open List is a \textit{queue}}
+\textcolor{red}{*Open List is a \textit{priority queue}}
 
 The path to follow is $S\rightarrow C\rightarrow D\rightarrow H\rightarrow G$
 
@@ -936,125 +936,545 @@ The corpus (or dataset) to be considered is "\texttt{200Reviews.csv}". You need 
 
 \begin{mdframed}[backgroundcolor=shadecolor]
 \begin{minted}[fontsize=\footnotesize,breaklines]{python}
+# Importing of respective packages that will be used for the processing
 import pandas as pd
-import nltk
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-nltk.download('stopwords')
+import numpy as np
 import re
-from textblob import TextBlob
-from textblob import Word
 
-df = pd.read_csv(r"200Reviews.csv", encoding = "iso-8859-1")
+import nltk
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import wordnet
+from nltk.corpus import stopwords
+from bs4 import BeautifulSoup
+
+import warnings
+warnings.filterwarnings('ignore')
 \end{minted}
 \end{mdframed}
 
-Next, we clean the text by replacing obvious mistakes and artifacts using a \texttt{dict}.
+{\large Text Lemmatization}
+
+As we are using \texttt{WordNet} Lemmatizer and the the standard \texttt{nltk} \texttt{pos} tags are \texttt{treebank} tags, we need to convert the \texttt{treebank} tag to \texttt{WordNet} tags.
+
+We write the following functions to implement our lemmatization pipeline:
 
 \begin{mdframed}[backgroundcolor=shadecolor]
 \begin{minted}[fontsize=\footnotesize,breaklines]{python}
-replace_dict = {r"`":"",r"â":"a",r'"':"",r"<br />":"",r'\\':""}
-
-for k,v in replace_dict.items():
-    df["review"] = df["review"].str.replace(k,v)
-for i in range(5):
-    df["review"] = df["review"].str.replace(r"  "," ")
-\end{minted}
-\end{mdframed}
-
-We then tokenize the paragraphs into sentences.
-
-\begin{mdframed}[backgroundcolor=shadecolor]
-\begin{minted}[fontsize=\footnotesize,breaklines]{python}
-def tokenize_sentences(paragraph):
-    return nltk.sent_tokenize(paragraph)
-
-df["review_sentences"] = df["review"].map(tokenize_sentences)
-\end{minted}
-\end{mdframed}
-
-Defining helper functions that feed into one main function \texttt{process\_text} that corrects spelling, converts text to lower case, removes stopwords, and tokenizes words.
-
-\begin{mdframed}[backgroundcolor=shadecolor]
-\begin{minted}[fontsize=\footnotesize,breaklines]{python}
-def correct_spelling(word):
-    return str(TextBlob(word).correct())
-
-def to_lower(word):
-    return word.lower()
-
-def lemmatize(words):
-    result = []
-    lemmatizer = WordNetLemmatizer()
-    for w in words:
-        result.append(lemmatizer.lemmatize(w))
-    return result
-
-def check_stopword(word):
-    stopWords = set(stopwords.words('english'))   
-    if word not in stopWords:
-        return True
+def get_wordnet_pos(treebank_tag):
+    if treebank_tag.startswith('J'):
+        return wordnet.ADJ
+    elif treebank_tag.startswith('V'):
+        return wordnet.VERB
+    elif treebank_tag.startswith('N'):
+        return wordnet.NOUN
+    elif treebank_tag.startswith('R'):
+        return wordnet.ADV
     else:
-        return False
+        return ''
 
-def tokenize_word(s):
-    wrd_list =  re.split("[^\w]",s)
-    tokenized_words = []
-    for focus_wrd in wrd_list.copy():
-        focus_wrd = focus_wrd.strip()
-        if (focus_wrd == ""):
-            continue
-        if " " in focus_wrd:
-            print (focus_wrd)
-            tokenized_words.extend(tokenize_word(focus_wrd))
-            continue
-        tokenized_words.append(focus_wrd)
-    return tokenized_words
+def review_to_wordlist(review, remove_stopwords = False):
+    """This function converts a text sentence to a sequence of words
+    Args:
+        review (str): String from reviews csv file
+        remove_stopwords (Bool): determines whether to remove stop words from lemmatized text
+    Yields:
+        words (list): A list of lemmatized words
+    Remarks:
+        First removes html tags
+        Then removes non-letters or numbers
+        Next, tokenizes sentence into words
+        Finally, lemmatizes words and optionally removes stop words
+    """
+    # 1 - Removing html tags
+    review_text = BeautifulSoup(review).get_text()
+    # 2 - Removing non-letter or numbers
+    review_text = re.sub("[^A-Za-z0-9]", " ", review_text)
+    # 3 - Tokenization of sentence into words
+    review_text = nltk.word_tokenize(review_text)
+    # 4a - Text Lemmatization
+    tagged_words = nltk.pos_tag(review_text)
+    words = []
+    wordnet_lemmatizer = WordNetLemmatizer()
+    for w in tagged_words:
+        wordnettag = get_wordnet_pos(w[1])
+        if wordnettag == "":
+            lemmatizedword = wordnet_lemmatizer.lemmatize(w[0].lower())
+        else:
+            lemmatizedword = wordnet_lemmatizer.lemmatize(w[0].lower(), pos = wordnettag)
+        words.append(lemmatizedword.lower())
+    # 4b - Optionally remove stopwords
+    if remove_stopwords:
+        stops = set(stopwords.words("english"))
+        words = [w for w in words if not w in stops]
+    return(words)
+    
+def review_to_sentence(review, tokenizer, remove_stopwords = False):
+    """# Function that splits a review into sentences
+    Args:
+        review (str): String from reviews csv file
+        tokenizer (nltk tokenizer): Tokenizer from nltk
+        remove_stopwords (bool): Determines whether to remove stopwords
+    """
+    # 1. Using nltk tokenizer
+    sentences_to_process = tokenizer.tokenize(review.strip())
+    processed_sentences = []
+    # 2. Loop for each sentence
+    for sentence in sentences_to_process:
+        if len(sentence) > 0:
+            sentences.append(review_to_wordlist(sentence, remove_stopwords))
+    # This returns the list of lists
+    return processed_sentences
+\end{minted}
+\end{mdframed}
 
-def process_text(sentences):
-    wordlist=[]
-    for k in range(len(sentences)):
-        words = tokenize_word(sentences[k])    
-        words = lemmatize (words) 
-        for w in words:            
-            w = to_lower(w)            
-            if check_stopword(w):
-                wordlist.append(w)
-    return wordlist
+We then read the \texttt{.csv} file and tokenize each review by sentences before removing non-alphabetical characters
 
-df["review_words"] = df["review_sentences"].map(process_text)
-df["new_review"] = df["review_words"].apply(lambda w: " ".join(w))
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+
+df = pd.read_csv("200Reviews.csv", encoding = "ISO-8859-1")
+tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
+sentences = []
+print("Reviews Count:", len(df["review"]))
+count = 0
+print("Begin parsing train set")
+print("Sentences parsed:", end = " ")
+for review in df["review"]:
+    sentences += review_to_sentence(review, tokenizer, True)
+    count += 1
+    print(count, end = " ")
+    
+print("\nDone!")
 
 \end{minted}
 \end{mdframed}
 
 The results of the text processing are as follows:
 
-\begin{verbatim}
-df['new_review']
-
-0      stuff going moment mj started listening music ...
-1      classic war worlds timothy hines entertaining ...
-2      film start manager nicholas bell giving welcom...
-3      must assumed praised film greatest filmed oper...
-4      superbly trashy wondrously unpretentious 80 ex...
-                                ...                        
-195    collection documentary last 11 minute 9 second...
-196    movie ha lot comedy dark gordon liu shine one ...
-197    watched kid film year missed come tigers first...
-198    probably heard phrase come movie â herbie full...
-199    wa thirteen movie came television far superior...
-Name: new_review, Length: 200, dtype: object
-\end{verbatim}
+\begin{lstlisting}
+    Reviews Count: 200
+    Begin parsing train set
+    Sentences parsed: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178 179 180 181 182 183 184 185 186 187 188 189 190 191 192 193 194 195 196 197 198 199 200 
+    Done!
+\end{lstlisting}
 
 \subsection{Co-occurence matrix}
 \mybox{Create the co-occurrence matrix for all the remaining words (after stop words are eliminated), where the window of co-occurrence is 5 on either side of the word.}
 
-\subsection{Word embeddings}
-\mybox{Apply SVD and obtain word embeddings of size 100.  
+\textbf{Response:} We write the following function to generate the co-occurence matrix based on each focus word and a fixed window around it
 
-Then, please generate word embeddings of size 100 using \texttt{Word2Vec.pynb} (from the NLP lecture) on the same "\texttt{200Reviews.csv}" dataset. 
-Please show comparison on few examples to understand which method works better. 
-Note your observations in your solution.}
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+
+def cooccurence_matrix(sentences, window_size = 5):
+    """Function that creates co-occurence matrix based on window size and the text that has been parsed. Skips if window range is outside sentence.
+    Args:
+        sentences (list of str): A list of strings corresponding to a tokenized sentence
+        window-size (int): Determines the size of the window around the focus word to generate co-occurences
+    Yields:
+        matrix (list of lists of int): The co-ocurrence matrix with the relevant windows_size
+    """
+    wordlist = set([word for sentence in sentences for word in sentence])
+    size = len(wordlist)
+    print(f"[{size}] unique words in corpus")
+    result_matrix = pd.DataFrame(np.zeros((size, size)), index = wordlist, columns = wordlist)
+    print(f"Now counting co-occurences for [{len(sentences)}] Sentences...\nProgress: ", sep = "", end = "")
+    for idx, sentence in enumerate(sentences):
+        if idx % 100 == 0:
+            print(f"{idx}...", end = " ")
+        sentence_length = len(sentence)
+        for sentence_index, focus_word in enumerate(sentence):
+            # Slide window around each focus word
+            for wordpair_index in range(1, window_size + 1):
+                # if index is after start of sentence
+                if sentence_index - wordpair_index >= 0:
+                    result_matrix.loc[focus_word, sentence[int(sentence_index - wordpair_index)]] += 1
+                # if index is before end of sentence
+                if sentence_index + wordpair_index < sentence_length:
+                    result_matrix.loc[focus_word, sentence[int(sentence_index + wordpair_index)]] += 1
+    print("\nCo-occurence matrix generated.")
+    return result_matrix
+
+\end{minted}
+\end{mdframed}
+
+Running the code nets us the following
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+window_size = 5
+matrix = cooccurence_matrix(sentences, window_size)
+\end{minted}
+\end{mdframed}
+
+\begin{lstlisting}
+
+andrew  frolic  whose  hickox  prison  pull  creativity  \
+andrew           0.0     0.0    0.0     0.0     0.0   0.0         0.0   
+frolic           0.0     0.0    1.0     0.0     0.0   0.0         0.0   
+whose            0.0     1.0    0.0     0.0     0.0   0.0         0.0   
+hickox           0.0     0.0    0.0     0.0     0.0   0.0         0.0   
+prison           0.0     0.0    0.0     0.0     0.0   0.0         0.0   
+...              ...     ...    ...     ...     ...   ...         ...   
+misanthropic     0.0     0.0    0.0     0.0     0.0   0.0         0.0   
+playing          0.0     0.0    0.0     0.0     0.0   0.0         0.0   
+depicts          0.0     0.0    0.0     0.0     0.0   0.0         0.0   
+filthy           0.0     0.0    0.0     0.0     0.0   0.0         0.0   
+moody            0.0     0.0    0.0     0.0     0.0   0.0         0.0   
+
+                circumstance  rabies  1986  ...  herein  kiss  decides  \
+andrew                 0.0     0.0   0.0  ...     0.0   0.0      0.0   
+frolic                 0.0     0.0   0.0  ...     0.0   0.0      0.0   
+whose                  0.0     0.0   0.0  ...     0.0   0.0      0.0   
+hickox                 0.0     0.0   0.0  ...     0.0   0.0      0.0   
+prison                 0.0     0.0   0.0  ...     0.0   0.0      0.0   
+...                    ...     ...   ...  ...     ...   ...      ...   
+misanthropic           0.0     0.0   0.0  ...     0.0   0.0      0.0   
+playing                0.0     0.0   0.0  ...     0.0   0.0      0.0   
+depicts                0.0     0.0   0.0  ...     0.0   0.0      0.0   
+filthy                 0.0     0.0   0.0  ...     0.0   0.0      0.0   
+moody                  0.0     0.0   0.0  ...     0.0   0.0      0.0   
+
+                conclude  uneven  misanthropic  playing  depicts  filthy  moody  
+andrew             0.0     0.0           0.0      0.0      0.0     0.0    0.0  
+frolic             0.0     0.0           0.0      0.0      0.0     0.0    0.0  
+whose              0.0     0.0           0.0      0.0      0.0     0.0    0.0  
+hickox             0.0     0.0           0.0      0.0      0.0     0.0    0.0  
+prison             0.0     0.0           0.0      0.0      0.0     0.0    0.0  
+...                ...     ...           ...      ...      ...     ...    ...  
+misanthropic       0.0     0.0           0.0      0.0      0.0     0.0    0.0  
+playing            0.0     0.0           0.0      0.0      0.0     0.0    0.0  
+depicts            0.0     0.0           0.0      0.0      0.0     0.0    0.0  
+filthy             0.0     0.0           0.0      0.0      0.0     0.0    0.0  
+moody              0.0     0.0           0.0      0.0      0.0     0.0    0.0  
+
+[6027 rows x 6027 columns]
+\end{lstlisting}
+
+\subsection{Word embeddings}
+\mybox{Apply SVD and obtain word embeddings of size 100.}
+
+\textbf{Response:} We now import of packages used for Singular Value Decomposition of our co-occurence matrix from the previous section
+
+To reduce our dimensionality, we limit our word embedding size to 100.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+from scipy.linalg import svd
+from numpy import diag
+U, s, VT = svd(matrix)
+embedding_size = 100
+U = U[:, :embedding_size]
+S = S[:embedding_size, :embedding_size]
+VT = VT[:embedding_size, :]
+
+print("Size of new matrix U is", U.shape)
+print("Size of new matrix S is", S.shape)
+print("Size of new matrix VT is", VT.shape)
+
+embedding_matrix = pd.DataFrame(U, index = matrix.index)
+\end{minted}
+\end{mdframed}
+
+Which nets us Matrix $U$ with dimensions $6027\times 100$
+
+\begin{lstlisting}
+Size of new matrix U is (6027, 100)
+Size of new matrix S is (100, 100)
+Size of new matrix VT is (100, 6027)
+\end{lstlisting}
+
+\subsection{Word2Vec}
+
+\mybox{Then, please generate word embeddings of size 100 using \texttt{Word2Vec.pynb} (from the NLP lecture) on the same "\texttt{200Reviews.csv}" dataset. 
+Please show comparison on few examples to understand which method works better. Note your observations in your solution.}
+
+\subsubsection{Code section}
+
+\textbf{Response:}
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+# Creating the model and setting values for the various parameters
+# Using the same sentences that are input into the model to maintain comparability
+num_features = 100  # Word vector dimensionality
+min_word_count = 1 # Minimum word count
+num_workers = 4     # Number of parallel threads
+context = 5        # Context window size
+downsampling = 1e-3 # (0.001) Downsample setting for frequent words
+
+# Initializing the train model
+from gensim.models import word2vec
+print("Training model....")
+model = word2vec.Word2Vec(sentences,\
+                          workers = num_workers,\
+                          vector_size = num_features,\
+                          min_count = min_word_count,\
+                          window = context,
+                          sample = downsampling)
+print(model)
+print("Done.")
+\end{minted}
+\end{mdframed}
+
+We write the following functions to aid in determining how similar word are to one another.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+def cosine_similarity(word1, word2):
+    """Calculates cosine similarity between two 2 word dimension features
+    Args:
+        word1 (list or pandas Series)
+        word2 (list or pandas Series)
+
+    Yields:
+        cosine_similarity (0 < float < 1): Cosine similarity
+    """
+    if (np.linalg.norm(word1)*np.linalg.norm(word2)) == 0:
+        cosine_similarity = -100
+    else:
+        cosine_similarity = np.dot(word1, word2) / (np.linalg.norm(word1)*np.linalg.norm(word2))
+    return cosine_similarity
+
+
+def most_similar(matrix, target_word, number=10):
+    """Prints out the a number of most similar words based on cosine similarity
+    Args:
+        matrix (pandas DataFrame): Word embedding matrix
+        word (str): Word vector to index the matrix
+        number (int): How many words to return
+    Yields:
+        None 
+    """
+    print(f"Target word is [{target_word}]")
+    features = np.array(matrix)
+    word_features = np.array(matrix.loc[target_word])
+    feature_cos_similarities = []
+    for feature in features:
+        feature_cos_similarities.append(cosine_similarity(feature, word_features))
+    print("-"*56)
+    
+    similarity_rankings = np.argsort(feature_cos_similarities)
+    for i in range(1, number+2):
+        if matrix.index[similarity_rankings[-i]] != target_word:
+            print(i-1, matrix.index[similarity_rankings[-i]], feature_cos_similarities[similarity_rankings[-i]])
+    print("-"*56)
+    
+def doesnt_match(matrix, words):
+    """Prints out the word that does not match in a list of words
+    Args:
+        matrix (pandas DataFrame): Word embedding matrix
+        words (list of str): list of words to determine odd word
+    Yields:
+        None
+    Remarks:
+        Iterates through each focus word in words and calculates cosine_similarity between the focus word and the other words.
+        The occurrence most dissimilar word from each focus word is added to a dict which tracks the number of occurences
+        The word with the highest value in the dict is the word which is determined to be dissimilar from the most number of focus words.
+    """
+    oddwords = {}
+    for focus_word in words:
+        focus_word_features = np.array(matrix.loc[focus_word])
+        similarity_list = []
+        for compared_word in words:
+            compared_word_features = np.array(matrix.loc[compared_word])
+            similarity_list.append(cosine_similarity(compared_word_features, focus_word_features))
+        odd_word = words[np.argsort(similarity_list)[0]]
+
+        if odd_word in oddwords:
+            oddwords[odd_word]+=1
+        else:
+            oddwords[odd_word]=1
+    
+    result = max(oddwords.keys(), key=oddwords.get)
+    print(f"Odd Word: {result}")
+\end{minted}
+\end{mdframed}
+
+We apply above functions by iterating through our test case.
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+
+# Words that will be tested on
+similarwords = ["thrill", "horror", "comedy", "romance"]
+
+for word in similarwords:
+    print("Most Similar Words based on SVD Count Based Method")
+    most_similar(embedding_matrix, word)
+    print("Most Similar Words based on Word2Vec")
+    print("Target Word:", word)
+    count = 1
+    for word2, score in model.wv.most_similar(word):
+        print(count, word2, score)
+        count += 1
+    print("="*56)
+    print()
+\end{minted}
+\end{mdframed}
+
+\subsubsection{Comparison between \texttt{Word2Vec} and \texttt{SVD}}
+
+{\large Word Similarity}
+
+Both techniques give mixed results for word similarity. 
+
+For instance, the word "horror" is correctly associated with Edgar Allen Poe using our \texttt{SVD} trained model. However, the rest of the words do not seem to have much bearing. 
+
+\texttt{Word2Vec} returns much more vague results, with words like "film" and "character" being the closest associated words from my personal opinion.
+
+For "romance" the results are even worse. "romance" was even associated with "zombie" for our \texttt{Word2Vec} case.
+
+In conclusion, both approaches perform differently for different words as evidenced by the difference in scores between each approach on the same word.
+
+Our results for word similarity are as follows:
+
+\begin{lstlisting}
+Most Similar Words based on SVD Count Based Method
+Target word is [thrill]
+--------------------------------------------------------
+0 overjoy 1.0
+2 weep 0.9046623917319988
+3 wiz 0.878417848436146
+4 alternative 0.853546730780722
+5 grass 0.853546730780722
+6 fascinating 0.8470791202164661
+7 ceremony 0.8435123498010818
+8 caribbean 0.7972308062841066
+9 starz 0.7943825761227766
+10 worried 0.7907181622775727
+--------------------------------------------------------
+Most Similar Words based on Word2Vec
+Target Word: thrill
+1 fossilized 0.3384301960468292
+2 cause 0.318146288394928
+3 sitcom 0.3180883526802063
+4 extremely 0.3119494915008545
+5 miserable 0.3063412606716156
+6 seek 0.30342936515808105
+7 suggest 0.29555368423461914
+8 coalition 0.292111873626709
+9 tight 0.2920524775981903
+10 thumb 0.2899966239929199
+========================================================
+
+Most Similar Words based on SVD Count Based Method
+Target word is [horror]
+--------------------------------------------------------
+1 edgar 0.6768376528294273
+2 interview 0.6651176540690175
+3 allan 0.6470243359005875
+4 panacea 0.6407844605771518
+5 wager 0.6300636665392728
+6 lock 0.6166518351521574
+7 helicopter 0.6061206116425559
+8 foster 0.5987050637694958
+9 anthology 0.5944347845125878
+10 cassandra 0.5847528162847823
+--------------------------------------------------------
+Most Similar Words based on Word2Vec
+Target Word: horror
+1 go 0.8576502203941345
+2 like 0.8498179912567139
+3 film 0.8475027084350586
+4 one 0.846524715423584
+5 think 0.8419342041015625
+6 way 0.8391382694244385
+7 character 0.8364621996879578
+8 get 0.835287868976593
+9 well 0.8350684642791748
+10 see 0.8343316316604614
+========================================================
+
+Most Similar Words based on SVD Count Based Method
+Target word is [comedy]
+--------------------------------------------------------
+1 screwball 0.7250405827707767
+2 wit 0.7136601982377639
+3 operate 0.7136601982377637
+4 vein 0.6818061612483495
+5 hawn 0.6398410238592813
+6 spirited 0.636001653583391
+7 thoroughly 0.6274431698054069
+8 beneath 0.6203970575781339
+9 surface 0.6203970575781339
+10 parable 0.6068151913645826
+--------------------------------------------------------
+Most Similar Words based on Word2Vec
+Target Word: comedy
+1 make 0.7479692697525024
+2 go 0.7388730049133301
+3 bad 0.7355589270591736
+4 film 0.7346001863479614
+5 movie 0.7264123558998108
+6 seem 0.7254176139831543
+7 get 0.7252454161643982
+8 try 0.7238624691963196
+9 watch 0.7223445177078247
+10 show 0.7219111323356628
+========================================================
+
+Most Similar Words based on SVD Count Based Method
+Target word is [romance]
+--------------------------------------------------------
+1 tabu 0.5293631301273979
+2 puberty 0.514623569746616
+3 34 0.512576568231544
+4 aged 0.4777813093573541
+5 yr 0.46953031469126016
+6 greenquist 0.45238895365555926
+7 cursed 0.44220470762691644
+8 learn 0.4360842118936542
+9 engineer 0.4284360059933918
+10 compact 0.42566218513482196
+--------------------------------------------------------
+Most Similar Words based on Word2Vec
+Target Word: romance
+1 year 0.41749727725982666
+2 make 0.4086826741695404
+3 low 0.40472960472106934
+4 much 0.3980807363986969
+5 zombie 0.3898499608039856
+6 night 0.3881601095199585
+7 give 0.3855125904083252
+8 split 0.38508740067481995
+9 know 0.3837257921695709
+10 support 0.38248103857040405
+========================================================
+    
+\end{lstlisting}
+
+{\large Odd Word Out}
+
+In terms of "odd word out" applications, our \texttt{SVD} seemed to perform better for the second test case.
+
+It correctly determined that man was not associated with the other animals, whereas \texttt{Word2Vec} chose "lion"
+
+Our results are as follows:
+
+\begin{mdframed}[backgroundcolor=shadecolor]
+\begin{minted}[fontsize=\footnotesize,breaklines]{python}
+doesntmatch = ["man woman dog child kitchen", 
+               "cat dog lion tiger man"]
+
+for words in doesntmatch:
+    print("List of Words:", words)
+    print("SVD ", end = "")
+    doesnt_match(embedding_matrix, words.split())
+    print("Word2Vec Odd Word:", model.wv.doesnt_match(words.split()))
+    print()
+
+\end{minted}
+\end{mdframed}
+
+\begin{lstlisting}
+List of Words: man woman dog child kitchen
+SVD Odd Word: kitchen
+Word2Vec Odd Word: kitchen
+
+List of Words: cat dog lion tiger man
+SVD Odd Word: man
+Word2Vec Odd Word: lion    
+\end{lstlisting}
 
 \end{document}
