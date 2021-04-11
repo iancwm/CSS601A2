@@ -13,6 +13,7 @@
 \usepackage{colortbl}
 \usepackage{framed}
 
+
 \definecolor{shadecolor}{RGB}{240,240,240}
 \newcommand{\mybox}[1]{\par\noindent\colorbox{shadecolor}
 {\parbox{\dimexpr\textwidth-2\fboxsep\relax}{#1}}}
@@ -105,9 +106,14 @@ is goal state.}
 
 \subsubsection{Is the heuristic admissible?}
 
-\textbf{Response:} A heuristic is defined as \textit{admissible} if it never \textit{overestimates} the \textbf{cost} of reaching the \textbf{goal}. 
+\textbf{Response:} \underline{YES}. The heuristic is admissible.
+
+A heuristic is defined as \textit{admissible} if it never \textit{overestimates} the \textbf{cost} of reaching the \textbf{goal}. 
 In otherwords, the cost that estimated by the heuristic to reach the goal \textbf{cannot} be \textit{higher} than the \textit{lowest} possible cost from the \textit{current point} in the path.
-More formally, $h(n)\leq c(n,g) \forall n$
+
+More formally: 
+
+\[h(n)\leq c(n,g) \forall n\]
 
 The minimum cost and the heuristic $h(n)$ to reach the goal from each node is given in the following table.
 Workings will follow the table.
@@ -203,9 +209,9 @@ $h(n)=\textcolor{red}{2}$
 Since $h(n)\leq c(n,g) \forall n$, the heuristic is \textit{admissible}.
 
 \subsubsection{Is the heuristic consistent? Provide justification}
-\textbf{Response:} No, the heuristic is not \textit{consistent}.
+\textbf{Response:} \underline{NO}. The heuristic is not \textit{consistent}.
 
-A heuristic is \textit{consistent} only if 
+A heuristic is \textit{consistent} only if:
 
 a) It is \textit{admissible} and;
 
@@ -264,9 +270,9 @@ the successors of the node that is recently popped.}
 \begin{center}
     \begin{tabular}{|c|c|c|c|}
     \hline
-    \multicolumn{4}{|c|}{Depth First Search (\textbf{DFS})\textcolor{red}{*}}\\
+    \multicolumn{4}{|c|}{Depth First Search (\textbf{DFS})}\\
     \hline
-    Step No. & Open List & POP & Nodes to add \\ 
+    Step No. & Open List\textcolor{red}{*} & POP & Nodes to add \\ 
     \hline
     1 & $S$ & $S$ & $A^S, B^S, C^S$ \\
     \hline
@@ -446,7 +452,7 @@ The code for the Simulator is provided in the zip file \texttt{"SelfDrivingCar.z
 installation/running of simulator and code details are provided in the file \texttt{"SelfDrivingCar.pdf"}
 (present in the \texttt{.zip} file).}
 
-\textbf{Response:} Please see attached \texttt{python} script.
+\textbf{Response:} Please see attached \texttt{SearchAgent.py} script and paste in simulation folder accordingly.
 
 \subsection{Submit code in \texttt{.pdf}}
 
@@ -454,7 +460,7 @@ installation/running of simulator and code details are provided in the file \tex
 
 \subsubsection{Algorithm 1 - \texttt{drive}}
 
-This is the code for the main drive code. It depends on the subsequent helper functions.
+This is the code for the main drive module. It depends on the subsequent helper functions.
 
 \begin{mdframed}[backgroundcolor=shadecolor]
 \begin{minted}[fontsize=\footnotesize,breaklines]{python}
@@ -751,60 +757,67 @@ Both pickup and move actions take one-time step each. Please provide the followi
 
 \subsection{Initialize $\forall s,V^0(s)=0$ and calculate:}
 
+\subsubsection{$\forall s,V^1(s),V^2(s),V^3(s)$}
+\subsubsection{$\forall s,\pi^1(s),\pi^2(s),\pi^3(s)$}
+
 \textbf{Response:}
 
-Computations are done in the following table, with figures rounded to 2 decimal places
+Computations are done in the following table, with figures rounded to 2 decimal places.
 
 \begin{footnotesize}
     \begin{tabular}{|l|c|c|c|c|c|c|c|c|c|c|c|}        
     \hline
-    $s$ & $a$  & $V^0(s)$ & $Q^1(s,a)$ & $V^1(s)$ & $\pi^1(s)$ & $Q^2(s,a)$ & $V^2(s)$ & $\pi^2(s)$ & $Q^3(s,a)$ & $V^3(s)$ & $\pi^3(s)$ \\ \hline
-    \multirow{5}{*}{$L1$}   & Pickup            & 0 & 3.08      & 3.08  & pickup & 6.49 & 6.49  & pickup & 9.80 & 9.80  & pickup      \\ \cline{2-12}
-                            & $\rightarrow L1$  & 0 & 0.00      & 3.08  & pickup & 3.08 & 6.49  & pickup  & 6.49 & 9.80  & pickup   \\ \cline{2-12}
-                            & $\rightarrow L2$  & 0 & -1.00     & 3.08  & pickup & 5.84 & 6.49  & pickup & 8.70 & 9.80  & pickup  \\ \cline{2-12}
-                            & $\rightarrow L3$  & 0 & -1.50     & 3.08  & pickup & -0.44 & 6.49  & pickup & 1.98 & 9.80  & pickup   \\ \cline{2-12}
-                            & $\rightarrow L4$  & 0 & -1.25     & 3.08  & pickup & 3.03 & 6.49  & pickup & 7.38 & 9.80  & pickup \\ \cline{2-12}
+    $s$ & $a$  & $V^0(s)$ & $Q^1(s,a)$ & $\textcolor{blue}{V^1(s)}$ & $\textcolor{green}{\pi^1(s)}$ & $Q^2(s,a)$ & $\textcolor{blue}{V^2(s)}$ & $\textcolor{green}{\pi^2(s)}$ & $Q^3(s,a)$ & $\textcolor{blue}{V^3(s)}$ & $\textcolor{green}{\pi^3(s)}$ \\ \hline
+    \multirow{5}{*}{$L1$}   & Pickup            & 0 & \textbf{\textcolor{blue}{3.08}}      & \textcolor{blue}{3.08} & \textcolor{green}{Pickup} & \textbf{\textcolor{blue}{6.49}} & \textcolor{blue}{6.49}  & \textcolor{green}{Pickup} & \textbf{\textcolor{blue}{9.80}} & \textcolor{blue}{9.80}  &\textcolor{green}{Pickup} \\ \cline{2-12}
+                            & $\rightarrow L1$  & 0 & 0.00      & \textcolor{blue}{3.08} & \textcolor{green}{Pickup} & 3.08 & \textcolor{blue}{6.49}  & \textcolor{green}{Pickup}  & 6.49 & \textcolor{blue}{9.80} & \textcolor{green}{Pickup}   \\ \cline{2-12}
+                            & $\rightarrow L2$  & 0 & -1.00     & \textcolor{blue}{3.08} & \textcolor{green}{Pickup} & 5.84 & \textcolor{blue}{6.49}  & \textcolor{green}{Pickup} & 8.70 & \textcolor{blue}{9.80} & \textcolor{green}{Pickup}  \\ \cline{2-12}
+                            & $\rightarrow L3$  & 0 & -1.50     & \textcolor{blue}{3.08} & \textcolor{green}{Pickup} & -0.44 & \textcolor{blue}{6.49}  & \textcolor{green}{Pickup} & 1.98 & \textcolor{blue}{9.80} & \textcolor{green}{Pickup}   \\ \cline{2-12}
+                            & $\rightarrow L4$  & 0 & -1.25     & \textcolor{blue}{3.08} & \textcolor{green}{Pickup} & 3.03 & \textcolor{blue}{6.49}  & \textcolor{green}{Pickup} & 7.38 & \textcolor{blue}{9.80} & \textcolor{green}{Pickup} \\ \cline{2-12}
     \hline
-    \multirow{5}{*}{$L2$}   & Pickup            & 0 & 6.48      & 6.48  & pickup & 9.70 & 9.70 & pickup & 12.53 & 12.53 & pickup \\ \cline{2-12}
-                            & $\rightarrow L1$  & 0 & -1.00     & 6.48  & pickup & 2.08 & 9.70 & pickup & 5.49 & 12.53 & pickup \\ \cline{2-12}
-                            & $\rightarrow L2$  & 0 & 0.00      & 6.48  & pickup & 6.84 & 9.70 & pickup & 9.70 & 12.53 & pickup \\ \cline{2-12}
-                            & $\rightarrow L3$  & 0 & -.075     & 6.48  & pickup & 0.31 & 9.70 & pickup & 2.73 & 12.53 & pickup \\ \cline{2-12}
-                            & $\rightarrow L4$  & 0 & -$\infty$ & 6.48  & pickup & -$\infty$ & 9.70 & pickup & -$\infty$ & 12.53  & pickup\\ \cline{2-12}
+    \multirow{5}{*}{$L2$}   & Pickup            & 0 & \textbf{\textcolor{blue}{6.48}}      & \textcolor{blue}{6.48} & \textcolor{green}{Pickup} & \textbf{\textcolor{blue}{9.70}} & \textcolor{blue}{9.70} & \textcolor{green}{Pickup} & \textbf{\textcolor{blue}{12.53}} & \textcolor{blue}{12.53} & \textcolor{green}{Pickup} \\ \cline{2-12}
+                            & $\rightarrow L1$  & 0 & -1.00     & \textcolor{blue}{6.48} & \textcolor{green}{Pickup} & 2.08 & \textcolor{blue}{9.70} & \textcolor{green}{Pickup} & 5.49 & \textcolor{blue}{12.53} & \textcolor{green}{Pickup} \\ \cline{2-12}
+                            & $\rightarrow L2$  & 0 & 0.00      & \textcolor{blue}{6.48} & \textcolor{green}{Pickup} & 6.84 & \textcolor{blue}{9.70} & \textcolor{green}{Pickup} & 9.70 & \textcolor{blue}{12.53} & \textcolor{green}{Pickup} \\ \cline{2-12}
+                            & $\rightarrow L3$  & 0 & -.075     & \textcolor{blue}{6.48} & \textcolor{green}{Pickup} & 0.31 & \textcolor{blue}{9.70} & \textcolor{green}{Pickup} & 2.73 & \textcolor{blue}{12.53} & \textcolor{green}{Pickup} \\ \cline{2-12}
+                            & $\rightarrow L4$  & 0 & -$\infty$ & \textcolor{blue}{6.48} & \textcolor{green}{Pickup} & -$\infty$ & \textcolor{blue}{9.70} & \textcolor{green}{Pickup} & -$\infty$ & \textcolor{blue}{12.53} & \textcolor{green}{Pickup}\\ \cline{2-12}
     \hline
-    \multirow{5}{*}{$L3$}   & Pickup            & 0 & 1.06      & 1.06 & pickup & 2.37 & 3.48 & $\rightarrow L4$ & 4.93 & 7.83 & $\rightarrow L4$ \\ \cline{2-12}
-                            & $\rightarrow L1$  & 0 & -1.50     & 1.06 & pickup & 1.58 & 3.48 & $\rightarrow L4$ & 4.99 & 7.83 & $\rightarrow L4$ \\ \cline{2-12}
-                            & $\rightarrow L2$  & 0 & -$\infty$ & 1.06 & pickup & -$\infty$ & 3.48 & $\rightarrow L4$ & -$\infty$ & 7.83 & $\rightarrow L4$ \\ \cline{2-12}
-                            & $\rightarrow L3$  & 0 & 0.00      & 1.06 & pickup & 1.06 & 3.48 & $\rightarrow L4$ & 3.48 & 7.83 & $\rightarrow L4$ \\ \cline{2-12}
-                            & $\rightarrow L4$  & 0 & -0.80     & 1.06 & pickup & 3.48 & 3.48 & $\rightarrow L4$ & 7.83 & 7.83  & $\rightarrow L4$ \\ \cline{2-12}
+    \multirow{5}{*}{$L3$}   & Pickup            & 0 & \textbf{\textcolor{blue}{1.06}}     & \textcolor{blue}{1.06} & \textcolor{green}{Pickup} & 2.37 & \textcolor{blue}{3.48} & \textcolor{green}{$\rightarrow L4$} & 4.93 & \textcolor{blue}{7.83} &\textcolor{green}{$\rightarrow L4$} \\ \cline{2-12}
+                            & $\rightarrow L1$  & 0 & -1.50     & \textcolor{blue}{1.06} & \textcolor{green}{Pickup} & 1.58 & \textcolor{blue}{3.48} & \textcolor{green}{$\rightarrow L4$} & 4.99 & \textcolor{blue}{7.83}& \textcolor{green}{$\rightarrow L4$} \\ \cline{2-12}
+                            & $\rightarrow L2$  & 0 & -$\infty$ & \textcolor{blue}{1.06} & \textcolor{green}{Pickup} & -$\infty$ & \textcolor{blue}{3.48} & \textcolor{green}{$\rightarrow L4$} & -$\infty$ & \textcolor{blue}{7.83} & \textcolor{green}{$\rightarrow L4$} \\ \cline{2-12}
+                            & $\rightarrow L3$  & 0 & 0.00      & \textcolor{blue}{1.06} & \textcolor{green}{Pickup} & 1.06 & \textcolor{blue}{3.48} & \textcolor{green}{$\rightarrow L4$} & 3.48 & \textcolor{blue}{7.83} & \textcolor{green}{$\rightarrow L4$} \\ \cline{2-12}
+                            & $\rightarrow L4$  & 0 & -0.80     & \textcolor{blue}{1.06} & \textcolor{green}{Pickup} & \textcolor{blue}{\textbf{3.48}} & \textcolor{blue}{3.48} & \textcolor{green}{$\rightarrow L4$} & \textcolor{blue}{\textbf{7.83}} & \textcolor{blue}{7.83}  & \textcolor{green}{$\rightarrow L4$} \\ \cline{2-12}
     \hline
-    \multirow{5}{*}{$L4$}   & Pickup            & 0 & 4.28      & 4.28  & pickup    & 8.63          & 8.63  & pickup    & 12.30     & 12.30 & pickup \\ \cline{2-12}
-                            & $\rightarrow L1$  & 0 & -1.25     & 4.28  & pickup    & 1.82          & 8.63  & pickup    & 5.24      & 12.30 & pickup \\ \cline{2-12}
-                            & $\rightarrow L2$  & 0 & -1.00     & 4.28  & pickup    & 5.84          & 8.63  & pickup    & 8.70      & 12.30 & pickup  \\ \cline{2-12}
-                            & $\rightarrow L3$  & 0 & -$\infty$ & 4.28  & pickup    & -$\infty$     & 8.63  & pickup    & -$\infty$ & 12.30 & pickup  \\ \cline{2-12}
-                            & $\rightarrow L4$  & 0 & 0.00      & 4.28  & pickup    & 4.28          & 8.63  & pickup    & 8.63      & 12.30 & pickup  \\ \cline{2-12}
+    \multirow{5}{*}{$L4$}   & Pickup            & 0 & \textbf{\textcolor{blue}{4.28}}      & \textcolor{blue}{4.28} & \textcolor{green}{Pickup} & \textcolor{blue}{\textbf{8.63}} & \textcolor{blue}{8.63} & \textcolor{green}{Pickup}    & \textcolor{blue}{\textbf{12.30}} & \textcolor{blue}{12.30} & \textcolor{green}{Pickup} \\ \cline{2-12}
+                            & $\rightarrow L1$  & 0 & -1.25     & \textcolor{blue}{4.28} & \textcolor{green}{Pickup} & 1.82          & \textcolor{blue}{8.63} & \textcolor{green}{Pickup}    & 5.24      & \textcolor{blue}{12.30} & \textcolor{green}{Pickup} \\ \cline{2-12}
+                            & $\rightarrow L2$  & 0 & -1.00     & \textcolor{blue}{4.28} & \textcolor{green}{Pickup} & 5.84          & \textcolor{blue}{8.63} & \textcolor{green}{Pickup}    & 8.70      & \textcolor{blue}{12.30} & \textcolor{green}{Pickup}  \\ \cline{2-12}
+                            & $\rightarrow L3$  & 0 & -$\infty$ & \textcolor{blue}{4.28} & \textcolor{green}{Pickup} & -$\infty$     & \textcolor{blue}{8.63} & \textcolor{green}{Pickup}    & -$\infty$ & \textcolor{blue}{12.30} & \textcolor{green}{Pickup}  \\ \cline{2-12}
+                            & $\rightarrow L4$  & 0 & 0.00      & \textcolor{blue}{4.28} & \textcolor{green}{Pickup} & 4.28          & \textcolor{blue}{8.63} & \textcolor{green}{Pickup}    & 8.63      & \textcolor{blue}{12.30} & \textcolor{green}{Pickup} \\ \cline{2-12}
     \hline
     \end{tabular}
 \end{footnotesize}
 
-\subsubsection{$\forall s,V^1(s),V^2(s),V^3(s)$}
+Initial parameters for our MDP:
 
-\textbf{Calculations for $V^1$}
-Key parameters for our MDP
-$V_0(s) = 0, \gamma = 1$ 
-$Q^t(s,a) = \sum_{s'} P(s'|s,a)[R(s,a,s')+ \gamma V_0(s')]$
-$V^*(s)=max_aQ(s,a)$
+$V_0(s) = 0, \gamma = 1$
+
+Using value iteration:
+
+$Q^t(s,a) = \sum_{s'} P(s'|s,a)[R(s,a,s')+ \gamma V^{t-1}(s')]$
+
+$V^t*(s)=max_a\{Q^t(s,a)\} \rightarrow$ highlighted in \textcolor{blue}{\underline{\textbf{BLUE}}}
+
+$\pi^t=argmax_a\{Q^t(s,a)\} \rightarrow$ highlighted in \textcolor{green}{\textbf{\underline{GREEN}}}
 
 \section{\texttt{OpenAI FrozenLake} environment}
 
-\mybox{In this question, you need to install OpenAI gym (\href{http://gym.openai.com/docs/}{http://gym.openai.com/docs/}). 
-Once the gym is installed, you have to implement \textit{Q-learning} for the \texttt{FrozenLake} environment (\href{https://gym.openai.com/envs/FrozenLake-v0/}{https://gym.openai.com/envs/FrozenLake-v0/}) in python using the gym library and show the rewards obtained. 
+\mybox{In this question, you need to install OpenAI \texttt{gym} (\href{http://gym.openai.com/docs/}{http://gym.openai.com/docs/}). 
+Once the \texttt{gym} is installed, you have to implement \textit{Q-learning} for the \texttt{FrozenLake} environment (\href{https://gym.openai.com/envs/FrozenLake-v0/}{https://gym.openai.com/envs/FrozenLake-v0/}) in python using the \texttt{gym} library and show the rewards obtained. 
 You may use a discount factor of \texttt{0.95}.
 
 Please provide the following two things in your solution for this question:}
 
 \subsection{Implement \textit{Q-learning}}
 \mybox{Code that implements \textit{Q-learning} for \texttt{Frozenlake} example in \texttt{gym}. 
-Copy and paste the code in the solution pdf, and provide the actual code file also.}
+Copy and paste the code in the solution \texttt{pdf}, and provide the actual code file also.}
 
 \textbf{Response:}
 
@@ -902,6 +915,22 @@ for episode in range(total_episodes):
 \end{minted}
 \end{mdframed}
 
+The tail end of the results of the simulation are shown below:
+
+\begin{lstlisting}
+...
+Episode 29990 | 31 steps | WIN
+Episode 29991 | 12 steps | WIN
+Episode 29992 | 24 steps | WIN
+Episode 29993 | 13 steps | WIN
+Episode 29994 | 27 steps | WIN
+Episode 29995 | 28 steps | WIN
+Episode 29996 | 48 steps | LOSE
+Episode 29997 | 64 steps | WIN
+Episode 29998 | 59 steps | LOSE
+Episode 29999 | 99 steps | WIN
+\end{lstlisting}
+
 We use the following code to plot the $MA100$ moving average for the episode return.
 
 \begin{mdframed}[backgroundcolor=shadecolor]
@@ -927,10 +956,10 @@ plt.savefig("episode_return.jpg")
 \section{\texttt{200Reviews.csv} SVD}
 
 \mybox{In this question, you will employ \textit{Singular Value Decomposition} to obtain word embeddings and compare the generated word embeddings with the word embeddings generated using \texttt{word2vec}. 
-The corpus (or dataset) to be considered is "\texttt{200Reviews.csv}". You need to do the following:}
+The corpus (or dataset) to be considered is ``texttt{200Reviews.csv}''. You need to do the following:}
 
 \subsection{Parsing data}
-\mybox{Parse the reviews in "\texttt{200Reviews.csv}", i.e., divide reviews into sentences and sentences into words and remove the stop words. You can employ the "\texttt{NLP-pipeline-example.ipynb}" example we talked about in class.}
+\mybox{Parse the reviews in ``\texttt{200Reviews.csv}'', i.e., divide reviews into sentences and sentences into words and remove the stop words. You can employ the ``\texttt{NLP-pipeline-example.ipynb}'' example we talked about in class.}
 
 \textbf{Response:} We import the packages required to process text in our preamble and read the dataframe as shown.
 
